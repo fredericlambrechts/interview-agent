@@ -1,0 +1,64 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--project-ref=lmpkpjwmasawykffnjut",
+        "--features=database,docs,debugging"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_e0bf426a06ff57983e758388fb4781f3fcdea80c"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_GdzrrrpcXmiR88HSYJNkUZKTazhF6s1sVJOk",
+        "GITHUB_REPOSITORY": "fredericlambrechts/interview-agent"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ],
+      "env": {
+        "PLAYWRIGHT_TOOLS_DISABLED": "file_upload,drag,hover,select_option,wait_for,tabs"
+      }
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    },
+    "vercel": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@vercel/mcp-server"
+      ],
+      "env": {
+        "VERCEL_TOKEN": "vercel_v1_YNOQxTQGJOUJLF8nLlDVIKGG6Z8"
+      }
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@context7/mcp-server"
+      ],
+      "env": {
+        "CONTEXT7_API_KEY": "your_context7_api_key_here"
+      }
+    }
+  }
+}
