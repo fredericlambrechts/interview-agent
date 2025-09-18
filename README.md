@@ -1,29 +1,40 @@
-# Next.js SaaS Starter Kit 2.0
+# SuperSwift Assessment Interview Agent
 
-A comprehensive, production-ready SaaS starter kit built with Next.js 15, featuring authentication, subscriptions, AI integration, and modern UI components.
+A voice-first AI interview agent for business discovery, built as a prototype to demonstrate conversational business assessment capabilities. This project automates strategic consulting discovery sessions through natural voice interaction.
 
-## ✨ Features
+## 🎯 Project Overview
+
+SuperSwift is an AI-first strategic business consulting platform prototype that captures business context through conversational voice interviews. The system validates a voice-first approach to discovery, builds user trust through natural interaction, and establishes the foundation for automated strategic asset generation for medtech companies.
+
+### Built on Next.js SaaS Starter Kit
+
+This project is built upon the excellent [Next.js SaaS Starter Kit](https://github.com/michaelshimeles/nextjs-starter-kit), providing a solid foundation of modern web technologies. We've customized it specifically for voice-first business interviews while maintaining the robust architecture and best practices of the original starter kit.
+
+## ✨ SuperSwift Features
+
+### 🎙️ Voice-First Interview System
+- **ElevenLabs API** integration for natural text-to-speech and speech-to-text
+- Structured business discovery through conversational flow
+- Real-time voice interaction with visual feedback
+- Interview progress tracking and conversation logging
+
+### 🏢 Business Context Collection
+- Comprehensive data collection pipeline for strategic consulting
+- Company profile generation from interview responses
+- Market intelligence gathering through conversation
+- Strategic foundation documentation and analysis
 
 ### 🔐 Authentication & User Management
 - **Better Auth v1.2.8** - Modern authentication system
-- Google OAuth integration
 - Session management with database persistence
-- User profile management with image uploads
-- Account linking for multiple providers
+- User profile management for interview subjects
+- Secure data handling for business-sensitive information
 
-### 💳 Subscription & Billing
-- **Polar.sh** integration for subscription management
-- Two-tier pricing: Starter ($99/month) & Professional ($499/month)
-- Real-time webhook processing
-- Customer portal for self-service billing
-- Subscription status tracking (active, canceled, expired)
-- Payment gating with elegant overlays
-
-### 🤖 AI Integration
-- **OpenAI** powered chatbot
-- React Markdown rendering for rich responses
-- Multi-step conversation support
-- Integrated chat widget in dashboard
+### 🤖 AI-Powered Conversation Management
+- Intelligent interview flow management
+- Context-aware question generation
+- Natural conversation patterns with business focus
+- Interview completion and summary generation
 
 ### 🎨 Modern UI/UX
 - **Tailwind CSS v4** - Latest utility-first styling
@@ -34,11 +45,10 @@ A comprehensive, production-ready SaaS starter kit built with Next.js 15, featur
 - Loading skeletons and optimistic UI updates
 
 ### 🗄️ Database & Storage
-- **Neon PostgreSQL** - Serverless database
-- **Drizzle ORM** - Type-safe database toolkit
-- **Cloudflare R2** - Scalable file storage with zero egress fees
+- **Supabase PostgreSQL** - Serverless database with real-time capabilities
+- **Drizzle ORM** - Type-safe database toolkit for interview data
 - Database migrations with Drizzle Kit
-- Drag & drop file uploads with progress tracking
+- Secure storage of business interview data and profiles
 
 ### 📊 Analytics & Monitoring
 - **PostHog** integration for product analytics
@@ -51,12 +61,12 @@ A comprehensive, production-ready SaaS starter kit built with Next.js 15, featur
 - **Framework**: Next.js 15.3.1 with App Router
 - **Language**: TypeScript with strict mode
 - **Styling**: Tailwind CSS v4 + shadcn/ui
-- **Database**: Neon PostgreSQL + Drizzle ORM
+- **Database**: Supabase PostgreSQL + Drizzle ORM
 - **Authentication**: Better Auth v1.2.8
-- **Payments**: Polar.sh
-- **AI**: OpenAI SDK
-- **Storage**: Cloudflare R2
-- **Analytics**: PostHog
+- **Voice AI**: ElevenLabs API for speech synthesis and recognition
+- **Conversation AI**: OpenAI SDK for intelligent interview flow
+- **Workflow Automation**: N8N for data orchestration
+- **Analytics**: PostHog for interview analytics
 - **Deployment**: Vercel (recommended)
 
 ## 📁 Project Structure
@@ -67,92 +77,115 @@ A comprehensive, production-ready SaaS starter kit built with Next.js 15, featur
 │   ├── dashboard/           # Protected dashboard area
 │   │   ├── _components/     # Dashboard components
 │   │   ├── chat/           # AI chat interface
-│   │   ├── upload/         # File upload with R2
-│   │   ├── payment/        # Subscription management
-│   │   └── settings/       # User settings & billing
-│   ├── pricing/            # Public pricing page
+│   │   ├── upload/         # File upload functionality
+│   │   ├── payment/        # Subscription management (from starter kit)
+│   │   └── settings/       # User settings
+│   ├── pricing/            # Public pricing page (from starter kit)
 │   └── api/                # API routes
+│       ├── interview/      # Interview API endpoints (NEW)
+│       ├── research/       # Research API endpoints (NEW)
+│       ├── auth/          # Authentication endpoints
+│       └── subscription/  # Subscription webhooks
 ├── components/
 │   ├── ui/                 # shadcn/ui components
 │   └── homepage/           # Landing page sections
 ├── lib/
-│   ├── auth/              # Authentication config
-│   ├── subscription.ts    # Subscription utilities
-│   └── upload-image.ts    # R2 file upload utilities
-└── db/
-    ├── schema.ts          # Database schema
-    └── drizzle.ts         # Database connection
+│   ├── auth.ts            # Authentication config
+│   ├── supabase.ts        # Supabase client config (NEW)
+│   └── utils.ts           # Utility functions
+├── db/
+│   ├── schema.ts          # Database schema (includes interview data models)
+│   └── drizzle.ts         # Database connection (updated for Supabase)
+└── docs/                   # Project documentation (NEW)
+    ├── stories/           # Development stories
+    ├── ArchitectureDocument.md
+    ├── PRD.md
+    └── ProjectBrief.md
 ```
 
 ## 🛠️ Quick Start
 
-### Prerequisites
-- Node.js 18+
-- PostgreSQL database (Neon recommended)
-- Cloudflare R2 bucket for file storage
-- Polar.sh account for subscriptions
-- OpenAI API key for AI features
-- Google OAuth credentials (optional)
+### Prerequisites (PRD Requirements)
+- **Node.js 18+** - JavaScript runtime
+- **Supabase CLI** - Database and auth platform (PRD requirement)
+- **ElevenLabs Account** - Voice API for voice-first interface (FR1)
+- **OpenAI API Key** - Conversation intelligence
+- **N8N Instance** - Workflow automation (PRD backend hosting requirement)
+- **Deno** - Future requirement for Edge Functions
 
-### Installation
+### 🚀 Environment Validation (Start Here!)
 
-1. **Clone the repository**
+**Before setting up anything, check if you're ready to build:**
+
 ```bash
-git clone <repository-url>
-cd next-starter-2.0
-```
+# Clone the repository
+git clone https://github.com/fredericlambrechts/interview-agent.git
+cd interview-agent
 
-2. **Install dependencies**
-```bash
+# Install dependencies
 npm install
+
+# 🔍 Check your environment setup
+npm run validate-env
 ```
 
-3. **Environment Setup**
-Create a `.env.local` file with:
+This will tell you exactly what's missing and provide setup links.
+
+### 📋 Environment Setup (PRD-Compliant)
+
+**Step 1: Copy the PRD-compliant environment template**
+```bash
+cp .env.prd-compliant .env.local
+```
+
+**Step 2: Configure required variables in `.env.local`**
+
+**🔐 Critical PRD Requirements:**
 ```env
-# Database
-DATABASE_URL="your-neon-database-url"
+# Supabase (PRD Database Requirement)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# Authentication
-BETTER_AUTH_SECRET="your-secret-key"
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
+# ElevenLabs Voice API (FR1 - Voice-First Interface)
+ELEVENLABS_API_KEY=your-elevenlabs-api-key
+ELEVENLABS_VOICE_ID=your-voice-id
 
-# Polar.sh
-POLAR_ACCESS_TOKEN="your-polar-access-token"
-POLAR_WEBHOOK_SECRET="your-webhook-secret"
+# N8N Workflows (PRD Backend Hosting)
+N8N_WEBHOOK_URL=https://your-n8n-instance.com
+N8N_API_KEY=your-n8n-api-key
 
-# OpenAI
-OPENAI_API_KEY="your-openai-api-key"
+# OpenAI for Conversation AI
+OPENAI_API_KEY=your-openai-api-key
 
-# Cloudflare R2 Storage
-CLOUDFLARE_ACCOUNT_ID="your-cloudflare-account-id"
-R2_UPLOAD_IMAGE_ACCESS_KEY_ID="your-r2-access-key-id"
-R2_UPLOAD_IMAGE_SECRET_ACCESS_KEY="your-r2-secret-access-key"
-R2_UPLOAD_IMAGE_BUCKET_NAME="your-r2-bucket-name"
-
-# Polar.sh Pricing Tiers
-NEXT_PUBLIC_STARTER_TIER="your-starter-product-id"
-NEXT_PUBLIC_STARTER_SLUG="your-starter-slug"
+# Core Application
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
+
+**Step 3: Validate your setup**
+```bash
+npm run validate-env
+```
+
+**✅ When you see "Ready to build", you're good to go!**
 
 4. **Database Setup**
 ```bash
-# Generate and run migrations
+# Generate and run migrations to Supabase
 npx drizzle-kit generate
 npx drizzle-kit push
 ```
 
-5. **Cloudflare R2 Setup**
-- Create a Cloudflare account and set up R2 storage
-- Create a bucket for file uploads
-- Generate API tokens with R2 permissions
-- Configure CORS settings for your domain
+5. **Supabase Setup**
+- Create a new Supabase project
+- Copy your project URL and anon key to environment variables
+- Set up authentication providers if needed
+- Configure Row Level Security (RLS) policies
 
-6. **Polar.sh Setup**
-- Create products for your pricing tiers
-- Set up webhook endpoints for subscription events
-- Configure your pricing structure
+6. **ElevenLabs Setup**
+- Create an ElevenLabs account
+- Generate an API key for voice synthesis
+- Configure voice models for your interview agent
 
 7. **Start Development Server**
 ```bash
@@ -161,18 +194,45 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see your application.
 
-## 🎯 Key Features Explained
+## 🔄 Modifications from Starter Kit
 
-### Subscription Management
-- Automatic subscription status checking
-- Payment gating for premium features
-- Integration with Polar.sh customer portal
-- Webhook handling for real-time updates
+This project builds upon the [Next.js SaaS Starter Kit](https://github.com/michaelshimeles/nextjs-starter-kit) with the following key modifications:
 
-### AI Chat Integration
-- Built-in chatbot with OpenAI
-- Markdown rendering for rich responses
-- Conversation history and context
+### Database Changes
+- **Migrated from Neon to Supabase**: Updated database driver and connection handling
+- **Enhanced Schema**: Added interview-specific data models for company profiles and interview sessions
+- **Supabase Integration**: Added proper Supabase client configuration
+
+### New Features Added
+- **Voice API Integration**: Added ElevenLabs API setup for speech-to-text and text-to-speech
+- **Interview API Endpoints**: Created dedicated API routes for interview functionality
+- **Business Data Models**: Extended database schema with company profile and interview session tables
+- **N8N Integration**: Added workflow automation capabilities for data processing
+
+### Project Structure Enhancements
+- **Documentation**: Added comprehensive project documentation in `/docs` folder
+- **Story Management**: Implemented BMad story-driven development workflow
+- **API Organization**: Restructured API routes for interview and research functionality
+
+### Retained from Starter Kit
+- **Authentication System**: Maintained Better Auth integration
+- **UI Components**: Kept shadcn/ui components and Tailwind CSS styling
+- **Modern Architecture**: Preserved Next.js 15 with App Router
+- **Type Safety**: Maintained TypeScript and Drizzle ORM integration
+
+## 🎯 SuperSwift Features Explained
+
+### Voice-First Interview System
+- **Natural Speech Processing**: ElevenLabs integration for realistic voice synthesis
+- **Conversation Flow Management**: Structured interview progression with context awareness
+- **Real-time Interaction**: Live voice feedback and visual conversation indicators
+- **Interview Analytics**: Comprehensive tracking of conversation patterns and user engagement
+
+### Business Discovery Engine
+- **Strategic Framework**: Automated capture of business model, market intelligence, and strategic positioning
+- **Company Profiling**: Dynamic generation of comprehensive business profiles from conversational data
+- **Context Preservation**: Secure storage and retrieval of sensitive business information
+- **Progress Tracking**: Visual interview completion status and conversation history
 
 ### File Upload System
 - **Cloudflare R2 integration** with S3-compatible API

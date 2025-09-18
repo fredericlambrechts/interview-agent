@@ -83,3 +83,26 @@ export const subscription = pgTable("subscription", {
   customFieldData: text("customFieldData"), // JSON string
   userId: text("userId").references(() => user.id),
 });
+
+// SuperSwift Interview Tables
+export const companyProfiles = pgTable("company_profiles", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").references(() => user.id).notNull(),
+  companyUrl: text("company_url").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  strategicFoundation: text("strategic_foundation"), // JSON string
+  strategyPositioning: text("strategy_positioning"), // JSON string  
+  executionOperations: text("execution_operations"), // JSON string
+});
+
+export const interviewSessions = pgTable("interview_sessions", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").references(() => user.id).notNull(),
+  companyProfileId: text("company_profile_id").references(() => companyProfiles.id),
+  conversationLog: text("conversation_log"), // JSON string
+  currentStep: text("current_step"),
+  status: text("status").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
