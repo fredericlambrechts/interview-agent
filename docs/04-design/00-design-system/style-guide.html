@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperSwift Design System - Complete Style Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600&family=Merriweather:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'executive': {
+                            'primary': 'var(--executive-primary)',
+                            'primary-foreground': 'var(--executive-primary-foreground)',
+                            'secondary': 'var(--executive-secondary)',
+                            'secondary-foreground': 'var(--executive-secondary-foreground)',
+                            'accent': 'var(--executive-accent)',
+                            'accent-foreground': 'var(--executive-accent-foreground)',
+                            'trust': 'var(--executive-trust)',
+                            'trust-foreground': 'var(--executive-trust-foreground)',
+                            'background': 'var(--executive-background)',
+                            'foreground': 'var(--executive-foreground)',
+                            'muted': 'var(--executive-muted)',
+                            'muted-foreground': 'var(--executive-muted-foreground)',
+                            'border': 'var(--executive-border)',
+                            'success': 'var(--executive-success)',
+                            'warning': 'var(--executive-warning)',
+                            'destructive': 'var(--executive-destructive)',
+                            'info': 'var(--executive-info)'
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        'display': ['Outfit', 'Inter', 'sans-serif'],
+                        'serif': ['Merriweather', 'Georgia', 'Times New Roman', 'serif'],
+                        'mono': ['JetBrains Mono', 'SF Mono', 'Consolas', 'Liberation Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            /* Light Mode Colors */
+            --executive-primary: oklch(0.2050 0 0);
+            --executive-primary-foreground: oklch(0.9850 0 0);
+            --executive-secondary: oklch(0.9700 0 0);
+            --executive-secondary-foreground: oklch(0.2050 0 0);
+            --executive-accent: oklch(0.6489 0.2370 26.9728);
+            --executive-accent-foreground: oklch(1.0000 0 0);
+            --executive-trust: oklch(0.5800 0.1200 240.0000);
+            --executive-trust-foreground: oklch(1.0000 0 0);
+            --executive-background: oklch(1.0000 0 0);
+            --executive-foreground: oklch(0.1450 0 0);
+            --executive-muted: oklch(0.9700 0 0);
+            --executive-muted-foreground: oklch(0.5560 0 0);
+            --executive-border: oklch(0.9220 0 0);
+            --executive-success: oklch(0.6800 0.1500 160.0000);
+            --executive-warning: oklch(0.8100 0.2500 85.0000);
+            --executive-destructive: oklch(0.5770 0.2450 27.3250);
+            --executive-info: oklch(0.6200 0.1900 260.0000);
+
+            /* Effects */
+            --shadow-focus: 0 0 0 3px oklch(0.6489 0.2370 26.9728 / 0.3);
+            --progress-gradient: linear-gradient(90deg, oklch(0.6489 0.2370 26.9728), oklch(0.5800 0.1200 240.0000));
+            --validation-gradient: linear-gradient(135deg, oklch(0.9850 0.1000 260.0000) 0%, oklch(1.0000 0 0) 100%);
+        }
+
+        .dark {
+            /* Dark Mode Colors */
+            --executive-primary: oklch(0.9850 0 0);
+            --executive-primary-foreground: oklch(0.1450 0 0);
+            --executive-secondary: oklch(0.2400 0 0);
+            --executive-secondary-foreground: oklch(0.9850 0 0);
+            --executive-accent: oklch(0.6489 0.2370 26.9728);
+            --executive-accent-foreground: oklch(0.1450 0 0);
+            --executive-trust: oklch(0.6500 0.1400 240.0000);
+            --executive-trust-foreground: oklch(0.1450 0 0);
+            --executive-background: oklch(0.1200 0 0);
+            --executive-foreground: oklch(0.9850 0 0);
+            --executive-muted: oklch(0.2200 0 0);
+            --executive-muted-foreground: oklch(0.6500 0 0);
+            --executive-border: oklch(0.3000 0 0);
+            --executive-success: oklch(0.7200 0.1600 160.0000);
+            --executive-warning: oklch(0.8300 0.2600 85.0000);
+            --executive-destructive: oklch(0.6200 0.2600 27.3250);
+            --executive-info: oklch(0.6800 0.2000 260.0000);
+
+            /* Dark Mode Effects */
+            --shadow-focus: 0 0 0 3px oklch(0.6489 0.2370 26.9728 / 0.4);
+            --progress-gradient: linear-gradient(90deg, oklch(0.6489 0.2370 26.9728), oklch(0.6500 0.1400 240.0000));
+            --validation-gradient: linear-gradient(135deg, oklch(0.2000 0.0500 260.0000) 0%, oklch(0.1200 0 0) 100%);
+        }
+        
+        .strategic-focus:focus {
+            outline: none;
+            box-shadow: var(--shadow-focus);
+        }
+        
+        .color-swatch {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        
+        .color-swatch:hover {
+            transform: scale(1.05);
+        }
+        
+        .color-info {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            pointer-events: none;
+        }
+        
+        .color-swatch:hover .color-info {
+            opacity: 1;
+        }
+        
+        .btn-primary {
+            background: var(--executive-primary);
+            color: var(--executive-primary-foreground);
+            font-weight: 600;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-size: 1rem;
+            line-height: 1.5;
+            cursor: pointer;
+            transition: all 150ms ease-in-out;
+            min-height: 44px;
+            min-width: 120px;
+        }
+        
+        .btn-primary:hover {
+            background: var(--executive-foreground);
+            color: var(--executive-background);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        
+        .btn-secondary {
+            background: var(--executive-secondary);
+            color: var(--executive-secondary-foreground);
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--executive-border);
+            font-size: 1rem;
+            line-height: 1.5;
+            cursor: pointer;
+            transition: all 150ms ease-in-out;
+            min-height: 44px;
+            min-width: 100px;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--executive-muted);
+            border-color: var(--executive-primary);
+        }
+        
+        .btn-accent {
+            background: var(--executive-accent);
+            color: var(--executive-accent-foreground);
+            font-weight: 600;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-size: 1rem;
+            line-height: 1.5;
+            cursor: pointer;
+            transition: all 150ms ease-in-out;
+            min-height: 44px;
+            min-width: 140px;
+        }
+        
+        .btn-accent:hover {
+            background: oklch(0.6000 0.2370 26.9728);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        
+        .input-field {
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--executive-border);
+            border-radius: 0.5rem;
+            background: var(--executive-background);
+            color: var(--executive-foreground);
+            transition: all 150ms ease-in-out;
+            min-height: 44px;
+            width: 100%;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--executive-primary);
+            box-shadow: var(--shadow-focus);
+            transform: scale(1.01);
+        }
+        
+        .input-field::placeholder {
+            color: var(--executive-muted-foreground);
+            font-style: italic;
+        }
+        
+        .progress-fill {
+            background: var(--progress-gradient);
+        }
+        
+        .validation-container {
+            background: var(--validation-gradient);
+            border: 1px solid oklch(0.5635 0.2408 260.8178 / 0.2);
+        }
+        
+        .phase-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transition: all 150ms ease-in-out;
+        }
+        
+        .phase-dot--completed {
+            background: var(--executive-success);
+            border: 2px solid var(--executive-success);
+        }
+        
+        .phase-dot--current {
+            background: var(--executive-accent);
+            border: 2px solid var(--executive-accent);
+            box-shadow: 0 0 0 4px oklch(0.6489 0.2370 26.9728 / 0.2);
+            transform: scale(1.1);
+        }
+        
+        .phase-dot--validation {
+            background: var(--executive-trust);
+            border: 2px solid var(--executive-trust);
+            box-shadow: 0 0 0 4px var(--executive-trust) / 0.2;
+        }
+        
+        .phase-dot--pending {
+            background: var(--executive-background);
+            border: 2px solid var(--executive-muted-foreground);
+        }
+        
+        code {
+            background: var(--executive-muted);
+            color: var(--executive-foreground);
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .nav-item {
+            position: sticky;
+            top: 80px;
+            z-index: 10;
+        }
+        
+        /* Theme Toggle System */
+        .theme-option {
+            cursor: pointer;
+            color: var(--executive-muted-foreground);
+        }
+        
+        .theme-option:hover {
+            background: var(--executive-secondary);
+            color: var(--executive-foreground);
+        }
+        
+        .theme-option.active {
+            background: var(--executive-accent);
+            color: var(--executive-accent-foreground);
+        }
+        
+        .theme-option.active:hover {
+            background: var(--executive-accent);
+            color: var(--executive-accent-foreground);
+        }
+    </style>
+</head>
+<body class="font-sans transition-colors duration-200" style="background: var(--executive-background); color: var(--executive-foreground);">
+    
+    <!-- Header -->
+    <header class="px-6 py-4 sticky top-0 z-50 border-b transition-colors duration-200" style="background: var(--executive-background); border-color: var(--executive-border);">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center p-1" style="background: var(--executive-accent);">
+                    <img src="../../../public/logos/superswift-icon-black.svg" alt="SuperSwift" class="w-full h-full">
+                </div>
+                <div>
+                    <h1 class="font-display font-semibold text-2xl" style="color: var(--executive-foreground);">SuperSwift Design System</h1>
+                    <p class="text-sm" style="color: var(--executive-muted-foreground);">Version 2.0 • Complete Visual Style Guide</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-1 rounded-lg border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                    <button id="system-mode" class="theme-option p-2 rounded-md transition-colors duration-150" title="System">
+                        <i data-lucide="monitor" class="w-4 h-4"></i>
+                    </button>
+                    <button id="light-mode" class="theme-option p-2 rounded-md transition-colors duration-150" title="Light">
+                        <i data-lucide="sun" class="w-4 h-4"></i>
+                    </button>
+                    <button id="dark-mode" class="theme-option p-2 rounded-md transition-colors duration-150" title="Dark">
+                        <i data-lucide="moon" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="text-sm" style="color: var(--executive-muted-foreground);">
+                    Executive Professional Design System
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="px-6 py-3 nav-item border-b transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex space-x-6 text-sm overflow-x-auto">
+                <a href="#philosophy" class="transition-colors whitespace-nowrap hover:text-executive-foreground" style="color: var(--executive-muted-foreground);">Philosophy</a>
+                <a href="#colors" class="transition-colors whitespace-nowrap hover:text-executive-foreground" style="color: var(--executive-muted-foreground);">Colors</a>
+                <a href="#dark-mode" class="transition-colors whitespace-nowrap hover:text-executive-foreground" style="color: var(--executive-muted-foreground);">Dark Mode</a>
+                <a href="#typography" class="transition-colors whitespace-nowrap hover:text-executive-foreground" style="color: var(--executive-muted-foreground);">Typography</a>
+                <a href="#spacing" class="transition-colors whitespace-nowrap hover:text-executive-foreground" style="color: var(--executive-muted-foreground);">Spacing</a>
+                <a href="#logos" class="transition-colors whitespace-nowrap hover:text-executive-foreground" style="color: var(--executive-muted-foreground);">Logos</a>
+                <a href="#generic-components" class="transition-colors whitespace-nowrap hover:text-executive-foreground" style="color: var(--executive-muted-foreground);">Generic Components</a>
+                <a href="#assessment-components" class="transition-colors whitespace-nowrap hover:text-executive-foreground" style="color: var(--executive-muted-foreground);">Assessment Components</a>
+                <a href="#usage" class="transition-colors whitespace-nowrap hover:text-executive-foreground" style="color: var(--executive-muted-foreground);">Usage Guidelines</a>
+                <a href="#implementation" class="transition-colors whitespace-nowrap hover:text-executive-foreground" style="color: var(--executive-muted-foreground);">Implementation</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        
+        <!-- Design Philosophy -->
+        <section id="philosophy" class="mb-16">
+            <h2 class="font-display font-semibold text-3xl mb-6" style="color: var(--executive-foreground);">Design Philosophy</h2>
+            <div class="bg-executive-muted rounded-xl p-8 border border-executive-border">
+                <p class="text-executive-foreground text-lg leading-relaxed mb-6">
+                    SuperSwift's UI embodies <strong>Executive Intelligence</strong> - sophisticated, trustworthy design that conveys strategic expertise while maintaining accessibility and efficiency.
+                </p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-semibold mb-4" style="color: var(--executive-foreground);">Core Principles</h3>
+                        <ul class="space-y-2 text-executive-muted-foreground">
+                            <li class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-executive-accent rounded-full"></div>
+                                <span><strong>Executive Professional:</strong> Appropriate for C-level presentations</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-executive-accent rounded-full"></div>
+                                <span><strong>European Sophistication:</strong> Clean, minimal aesthetic</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-executive-accent rounded-full"></div>
+                                <span><strong>Strategic Credibility:</strong> €200K+ consulting value</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-executive-accent rounded-full"></div>
+                                <span><strong>Accessible Intelligence:</strong> Sophisticated without complexity</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-executive-accent rounded-full"></div>
+                                <span><strong>Mobile Executive:</strong> Touch-optimized for all devices</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold mb-4" style="color: var(--executive-foreground);">Target Audience</h3>
+                        <p class="text-executive-muted-foreground mb-4">
+                            European MedTech Executives and Strategic Consulting Professionals who value premium strategic consulting software.
+                        </p>
+                        <div class="bg-executive-background rounded-lg p-4 border border-executive-border">
+                            <p class="text-sm text-executive-trust font-medium">
+                                💡 Design Standard: Fortune 500 company aesthetic
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Color System -->
+        <section id="colors" class="mb-16">
+            <h2 class="font-display font-semibold text-3xl mb-6" style="color: var(--executive-foreground);">Color System</h2>
+            
+            <!-- Brand Colors -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Brand Colors</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-primary mx-auto mb-4">
+                            <div class="color-info">
+                                Primary<br>
+                                #1a1a1a<br>
+                                oklch(0.2050 0 0)
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Primary</h4>
+                        <p class="text-sm text-executive-muted-foreground">Deep Professional Black</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-accent mx-auto mb-4">
+                            <div class="color-info">
+                                Accent<br>
+                                #cd9834<br>
+                                oklch(0.6489 0.2370 26.9728)
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Accent</h4>
+                        <p class="text-sm text-executive-muted-foreground">Sophisticated Gold</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-trust mx-auto mb-4">
+                            <div class="color-info">
+                                Trust<br>
+                                #4a6fa5<br>
+                                oklch(0.5800 0.1200 240.0000)
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Trust</h4>
+                        <p class="text-sm text-executive-muted-foreground">Professional Blue</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-success mx-auto mb-4">
+                            <div class="color-info">
+                                Success<br>
+                                #7aa068<br>
+                                oklch(0.6800 0.1500 160.0000)
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Success</h4>
+                        <p class="text-sm text-executive-muted-foreground">Refined Green</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Neutral Colors -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Neutral Palette</h3>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-background border-2 border-executive-border mx-auto mb-4">
+                            <div class="color-info">
+                                Background<br>
+                                #ffffff<br>
+                                Pure White
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Background</h4>
+                    </div>
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-muted mx-auto mb-4">
+                            <div class="color-info">
+                                Muted<br>
+                                #f8f9fa<br>
+                                Light Gray
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Muted</h4>
+                    </div>
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-border mx-auto mb-4 border border-executive-primary">
+                            <div class="color-info">
+                                Border<br>
+                                #e5e7eb<br>
+                                Light Border
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Border</h4>
+                    </div>
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-foreground mx-auto mb-4">
+                            <div class="color-info">
+                                Foreground<br>
+                                #1f2937<br>
+                                Near Black
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Foreground</h4>
+                    </div>
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-muted-foreground mx-auto mb-4">
+                            <div class="color-info">
+                                Muted Text<br>
+                                #6b7280<br>
+                                Medium Gray
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Muted Text</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Semantic Colors -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Semantic Colors</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-warning mx-auto mb-4">
+                            <div class="color-info">
+                                Warning<br>
+                                #f59e0b<br>
+                                Executive Amber
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Warning</h4>
+                    </div>
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-destructive mx-auto mb-4">
+                            <div class="color-info">
+                                Destructive<br>
+                                #dc2626<br>
+                                Professional Red
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Destructive</h4>
+                    </div>
+                    <div class="text-center">
+                        <div class="color-swatch bg-executive-info mx-auto mb-4">
+                            <div class="color-info">
+                                Info<br>
+                                #3b82f6<br>
+                                Intelligence Blue
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Info</h4>
+                    </div>
+                    <div class="text-center">
+                        <div class="color-swatch progress-fill mx-auto mb-4 rounded-xl">
+                            <div class="color-info">
+                                Progress<br>
+                                Gradient<br>
+                                Gold → Blue
+                            </div>
+                        </div>
+                        <h4 class="font-medium" style="color: var(--executive-foreground);">Progress</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Color Usage Guidelines -->
+            <div class="bg-executive-muted rounded-xl p-8 border border-executive-border">
+                <h3 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Color Usage Guidelines</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-4 h-4 bg-executive-primary rounded"></div>
+                            <span class="text-sm"><strong>Primary (Black):</strong> Main text, primary actions, brand identity</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-4 h-4 bg-executive-accent rounded"></div>
+                            <span class="text-sm"><strong>Accent (Gold):</strong> Strategic highlights, premium features, CTAs</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-4 h-4 bg-executive-trust rounded"></div>
+                            <span class="text-sm"><strong>Trust (Blue):</strong> AI-generated content, validation states, professional confidence</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-4 h-4 bg-executive-success rounded"></div>
+                            <span class="text-sm"><strong>Success (Green):</strong> Completion states, achievements, strategic progress</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-4 h-4 bg-executive-warning rounded"></div>
+                            <span class="text-sm"><strong>Warning (Amber):</strong> Caution states, important information</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-4 h-4 bg-executive-destructive rounded"></div>
+                            <span class="text-sm"><strong>Destructive (Red):</strong> Error states, deletion actions</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dark Mode System -->
+        <section id="dark-mode" class="mb-16">
+            <h2 class="font-display font-semibold text-3xl mb-6" style="color: var(--executive-foreground);">Dark Mode System</h2>
+            
+            <!-- Dark Mode Overview -->
+            <div class="mb-12">
+                <div class="rounded-xl p-8 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                    <h3 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Executive Dark Mode</h3>
+                    <p class="text-lg leading-relaxed mb-6" style="color: var(--executive-foreground);">
+                        SuperSwift's dark mode maintains the sophisticated, executive-level aesthetic while providing comfortable viewing in low-light environments.
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-medium mb-3" style="color: var(--executive-foreground);">Dark Mode Principles</h4>
+                            <ul class="space-y-2 text-sm" style="color: var(--executive-muted-foreground);">
+                                <li class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 rounded-full" style="background: var(--executive-accent);"></div>
+                                    <span><strong>Executive Elegance:</strong> Maintains professional sophistication</span>
+                                </li>
+                                <li class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 rounded-full" style="background: var(--executive-accent);"></div>
+                                    <span><strong>Enhanced Contrast:</strong> Improves readability and accessibility</span>
+                                </li>
+                                <li class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 rounded-full" style="background: var(--executive-accent);"></div>
+                                    <span><strong>Preserved Branding:</strong> Gold accent remains prominent</span>
+                                </li>
+                                <li class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 rounded-full" style="background: var(--executive-accent);"></div>
+                                    <span><strong>Strategic Intelligence:</strong> Enhanced Trust and Success colors</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="rounded-lg p-4 border transition-colors duration-200" style="background: var(--executive-background); border-color: var(--executive-border);">
+                            <p class="text-sm mb-4 font-medium" style="color: var(--executive-trust);">
+                                💡 Use the 3-mode theme toggle in the header: System, Light, Dark
+                            </p>
+                            <button class="btn-primary mr-3">Primary Action</button>
+                            <button class="btn-accent">Strategic CTA</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dark Mode Color Comparison -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Light vs Dark Mode Colors</h3>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Light Mode -->
+                    <div class="rounded-xl p-6 border" style="background: white; border-color: #e5e7eb;">
+                        <h4 class="font-semibold text-lg mb-4" style="color: #1f2937;">Light Mode</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-6 h-6 rounded" style="background: #ffffff; border: 1px solid #e5e7eb;"></div>
+                                <span class="text-sm" style="color: #1f2937;"><strong>Background:</strong> Pure White</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-6 h-6 rounded" style="background: #1a1a1a;"></div>
+                                <span class="text-sm" style="color: #1f2937;"><strong>Foreground:</strong> Deep Black</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-6 h-6 rounded" style="background: #cd9834;"></div>
+                                <span class="text-sm" style="color: #1f2937;"><strong>Accent:</strong> Sophisticated Gold</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-6 h-6 rounded" style="background: #4a6fa5;"></div>
+                                <span class="text-sm" style="color: #1f2937;"><strong>Trust:</strong> Professional Blue</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dark Mode -->
+                    <div class="rounded-xl p-6 border" style="background: #1e1e1e; border-color: #404040;">
+                        <h4 class="font-semibold text-lg mb-4" style="color: #f8fafc;">Dark Mode</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-6 h-6 rounded" style="background: #1e1e1e; border: 1px solid #404040;"></div>
+                                <span class="text-sm" style="color: #f8fafc;"><strong>Background:</strong> Rich Dark</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-6 h-6 rounded" style="background: #f8fafc;"></div>
+                                <span class="text-sm" style="color: #f8fafc;"><strong>Foreground:</strong> Clean White</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-6 h-6 rounded" style="background: #cd9834;"></div>
+                                <span class="text-sm" style="color: #f8fafc;"><strong>Accent:</strong> Enhanced Gold</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-6 h-6 rounded" style="background: #5b7dab;"></div>
+                                <span class="text-sm" style="color: #f8fafc;"><strong>Trust:</strong> Enhanced Blue</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Implementation -->
+            <div class="rounded-xl p-8 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                <h3 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Implementation Guide</h3>
+                <div class="rounded-lg p-4 border transition-colors duration-200" style="background: var(--executive-background); border-color: var(--executive-border);">
+                    <pre class="text-sm font-mono overflow-x-auto" style="color: var(--executive-foreground);"><code>/* 3-Mode Theme System Implementation */
+.dark {
+  --executive-background: oklch(0.1200 0 0);    /* Rich Dark */
+  --executive-foreground: oklch(0.9850 0 0);    /* Clean White */
+  --executive-trust: oklch(0.6500 0.1400 240.0000);  /* Enhanced Blue */
+  --executive-success: oklch(0.7200 0.1600 160.0000); /* Enhanced Green */
+}
+
+/* JavaScript 3-Mode Toggle */
+function applyTheme(theme) {
+  if (theme === 'system') {
+    const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', systemPreference);
+  } else {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }
+  localStorage.setItem('theme', theme);
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Typography -->
+        <section id="typography" class="mb-16">
+            <h2 class="font-display font-semibold text-3xl mb-6" style="color: var(--executive-foreground);">Typography System</h2>
+            
+            <!-- Font Families -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Font Families</h3>
+                <div class="space-y-6">
+                    <div class="rounded-lg p-6 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                        <div class="font-sans text-2xl font-medium mb-2" style="color: var(--executive-foreground);">Inter - Executive Sans-Serif</div>
+                        <div class="font-sans" style="color: var(--executive-muted-foreground);">Primary font for UI elements, body text, and professional communications</div>
+                        <code class="block mt-2">font-family: 'Inter', 'SF Pro Display', sans-serif</code>
+                    </div>
+                    <div class="rounded-lg p-6 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                        <div class="font-display text-2xl font-medium mb-2" style="color: var(--executive-foreground);">Outfit - Strategic Display</div>
+                        <div class="font-sans" style="color: var(--executive-muted-foreground);">For strategic titles, hero sections, and brand emphasis</div>
+                        <code class="block mt-2">font-family: 'Outfit', 'Inter', sans-serif</code>
+                    </div>
+                    <div class="rounded-lg p-6 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                        <div class="font-serif text-2xl font-medium mb-2" style="color: var(--executive-foreground);">Merriweather - Executive Serif</div>
+                        <div class="font-sans" style="color: var(--executive-muted-foreground);">For formal documents, quotes, and executive communications</div>
+                        <code class="block mt-2">font-family: 'Merriweather', Georgia, serif</code>
+                    </div>
+                    <div class="rounded-lg p-6 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                        <div class="font-mono text-2xl font-medium mb-2" style="color: var(--executive-foreground);">JetBrains Mono - Data Display</div>
+                        <div class="font-sans" style="color: var(--executive-muted-foreground);">For code, metrics, technical information, and data</div>
+                        <code class="block mt-2">font-family: 'JetBrains Mono', monospace</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Type Scale -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Type Scale</h3>
+                <div class="rounded-xl p-8 border space-y-6 transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                    <div class="text-5xl font-display font-bold" style="color: var(--executive-foreground);">Hero Title (48px)</div>
+                    <div class="text-4xl font-display font-semibold" style="color: var(--executive-foreground);">Strategic Title (36px)</div>
+                    <div class="text-3xl font-display font-semibold" style="color: var(--executive-foreground);">Page Heading (30px)</div>
+                    <div class="text-2xl font-semibold" style="color: var(--executive-foreground);">Section Heading (24px)</div>
+                    <div class="text-xl font-medium" style="color: var(--executive-foreground);">Small Heading (20px)</div>
+                    <div class="text-lg" style="color: var(--executive-foreground);">Emphasized Text (18px)</div>
+                    <div class="text-base" style="color: var(--executive-foreground);">Body Text (16px)</div>
+                    <div class="text-sm" style="color: var(--executive-foreground);">Secondary Text (14px)</div>
+                    <div class="text-xs" style="color: var(--executive-foreground);">Fine Print (12px)</div>
+                </div>
+            </div>
+
+            <!-- Font Weights -->
+            <div class="rounded-xl p-8 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                <h3 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Font Weights</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                        <div class="text-lg font-thin" style="color: var(--executive-foreground);">Thin (300) - Elegant, Sophisticated</div>
+                        <div class="text-lg font-normal" style="color: var(--executive-foreground);">Normal (400) - Standard Body Text</div>
+                        <div class="text-lg font-medium" style="color: var(--executive-foreground);">Medium (500) - Emphasized Content</div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="text-lg font-semibold" style="color: var(--executive-foreground);">Semibold (600) - Section Headers</div>
+                        <div class="text-lg font-bold" style="color: var(--executive-foreground);">Bold (700) - Strategic Emphasis</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logo System -->
+        <section id="logos" class="mb-16">
+            <h2 class="font-display font-semibold text-3xl mb-6" style="color: var(--executive-foreground);">Logo System</h2>
+            
+            <!-- Logo Variants -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Logo Variants</h3>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Icon Logo -->
+                    <div class="bg-executive-muted rounded-xl p-8 border border-executive-border">
+                        <h4 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Icon Logo</h4>
+                        <div class="flex items-center space-x-6 mb-6">
+                            <div class="w-16 h-16 bg-executive-accent rounded-lg flex items-center justify-center p-2">
+                                <img src="../../../public/logos/superswift-icon-black.svg" alt="SuperSwift Icon" class="w-full h-full">
+                            </div>
+                            <div class="w-12 h-12 bg-executive-accent rounded-lg flex items-center justify-center p-1.5">
+                                <img src="../../../public/logos/superswift-icon-black.svg" alt="SuperSwift Icon" class="w-full h-full">
+                            </div>
+                            <div class="w-8 h-8 bg-executive-accent rounded-lg flex items-center justify-center p-1">
+                                <img src="../../../public/logos/superswift-icon-black.svg" alt="SuperSwift Icon" class="w-full h-full">
+                            </div>
+                        </div>
+                        <p class="text-sm text-executive-muted-foreground mb-3">Use for: App icons, favicons, social media avatars</p>
+                        <code class="text-xs">../../../public/logos/superswift-icon-black.svg</code>
+                    </div>
+
+                    <!-- Full Logo -->
+                    <div class="bg-executive-muted rounded-xl p-8 border border-executive-border">
+                        <h4 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Full Logo</h4>
+                        <div class="mb-6">
+                            <img src="../../../public/logos/superswift-full-black.svg" alt="SuperSwift Full Logo" class="h-12">
+                        </div>
+                        <p class="text-sm text-executive-muted-foreground mb-3">Use for: Headers, business documents, presentations</p>
+                        <code class="text-xs">../../../public/logos/superswift-full-black.svg</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logo Usage Guidelines -->
+            <div class="bg-executive-muted rounded-xl p-8 border border-executive-border">
+                <h3 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Logo Usage Guidelines</h3>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-medium mb-3" style="color: var(--executive-foreground);">Do's</h4>
+                        <ul class="space-y-2 text-executive-muted-foreground text-sm">
+                            <li class="flex items-center space-x-2">
+                                <div class="w-4 h-4 rounded-full bg-executive-success flex items-center justify-center">
+                                    <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <span>Use icon logo in 16px, 24px, 32px, 48px sizes</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <div class="w-4 h-4 rounded-full bg-executive-success flex items-center justify-center">
+                                    <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <span>Place on executive-accent background with padding</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <div class="w-4 h-4 rounded-full bg-executive-success flex items-center justify-center">
+                                    <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <span>Maintain aspect ratio when scaling</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <div class="w-4 h-4 rounded-full bg-executive-success flex items-center justify-center">
+                                    <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <span>Use rounded corners (8px radius for containers)</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-medium mb-3" style="color: var(--executive-foreground);">Don'ts</h4>
+                        <ul class="space-y-2 text-executive-muted-foreground text-sm">
+                            <li class="flex items-center space-x-2">
+                                <div class="w-4 h-4 rounded-full bg-executive-destructive flex items-center justify-center">
+                                    <i data-lucide="x" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <span>Don't stretch or distort the logo</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <div class="w-4 h-4 rounded-full bg-executive-destructive flex items-center justify-center">
+                                    <i data-lucide="x" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <span>Don't use on low-contrast backgrounds</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <div class="w-4 h-4 rounded-full bg-executive-destructive flex items-center justify-center">
+                                    <i data-lucide="x" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <span>Don't add effects, shadows, or outlines</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <div class="w-4 h-4 rounded-full bg-executive-destructive flex items-center justify-center">
+                                    <i data-lucide="x" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <span>Don't use without proper padding</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Spacing System -->
+        <section id="spacing" class="mb-16">
+            <h2 class="font-display font-semibold text-3xl mb-6" style="color: var(--executive-foreground);">Spacing & Layout System</h2>
+            
+            <!-- Spacing Scale -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Spacing Scale</h3>
+                <div class="rounded-xl p-8 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div class="space-y-2">
+                            <div class="text-sm font-mono" style="color: var(--executive-muted-foreground);">--space-1</div>
+                            <div class="h-1 rounded" style="background: var(--executive-accent); width: 4px;"></div>
+                            <div class="text-xs" style="color: var(--executive-muted-foreground);">4px - Micro</div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-sm font-mono" style="color: var(--executive-muted-foreground);">--space-4</div>
+                            <div class="h-1 rounded" style="background: var(--executive-accent); width: 16px;"></div>
+                            <div class="text-xs" style="color: var(--executive-muted-foreground);">16px - Standard</div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-sm font-mono" style="color: var(--executive-muted-foreground);">--space-8</div>
+                            <div class="h-1 rounded" style="background: var(--executive-accent); width: 32px;"></div>
+                            <div class="text-xs" style="color: var(--executive-muted-foreground);">32px - Component</div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-sm font-mono" style="color: var(--executive-muted-foreground);">--space-16</div>
+                            <div class="h-1 rounded" style="background: var(--executive-accent); width: 64px;"></div>
+                            <div class="text-xs" style="color: var(--executive-muted-foreground);">64px - Hero</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Generic Components -->
+        <section id="generic-components" class="mb-16">
+            <h2 class="font-display font-semibold text-3xl mb-6" style="color: var(--executive-foreground);">Generic Components</h2>
+            
+            <!-- Buttons -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Button Components</h3>
+                <div class="space-y-8">
+                    <!-- Primary Buttons -->
+                    <div>
+                        <h4 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Primary Buttons (Strategic Actions)</h4>
+                        <div class="flex flex-wrap gap-4 items-center p-6 bg-executive-muted rounded-lg border border-executive-border">
+                            <button class="btn-primary strategic-focus">Continue Assessment</button>
+                            <button class="btn-primary opacity-50 cursor-not-allowed" disabled>Disabled State</button>
+                            <div class="text-sm text-executive-muted-foreground">
+                                Use for: Main assessment progression, strategic asset generation
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Secondary Buttons -->
+                    <div>
+                        <h4 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Secondary Buttons (Supporting Actions)</h4>
+                        <div class="flex flex-wrap gap-4 items-center p-6 bg-executive-muted rounded-lg border border-executive-border">
+                            <button class="btn-secondary strategic-focus">Save Progress</button>
+                            <button class="btn-secondary strategic-focus">Back</button>
+                            <button class="btn-secondary strategic-focus">Cancel</button>
+                            <div class="text-sm text-executive-muted-foreground">
+                                Use for: Save progress, navigation, optional actions
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Accent Buttons -->
+                    <div>
+                        <h4 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Accent Buttons (Strategic CTAs)</h4>
+                        <div class="flex flex-wrap gap-4 items-center p-6 bg-executive-muted rounded-lg border border-executive-border">
+                            <button class="btn-accent strategic-focus">Generate Strategic Canvas</button>
+                            <button class="btn-accent strategic-focus">Book Consultation</button>
+                            <div class="text-sm text-executive-muted-foreground">
+                                Use for: Strategic CTAs, premium feature access, conversion points
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Components -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Form Components</h3>
+                <div class="space-y-6 p-6 bg-executive-muted rounded-lg border border-executive-border">
+                    <div>
+                        <label class="block font-medium text-executive-foreground mb-2">Company URL</label>
+                        <input type="url" class="input-field strategic-focus w-full max-w-md" placeholder="https://yourcompany.com">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-executive-foreground mb-2">Industry</label>
+                        <select class="input-field strategic-focus w-full max-w-md">
+                            <option>Select your industry...</option>
+                            <option>MedTech</option>
+                            <option>HealthTech</option>
+                            <option>Pharmaceuticals</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium text-executive-foreground mb-2">Strategic Challenge</label>
+                        <textarea class="input-field strategic-focus w-full max-w-md resize-none" rows="3" placeholder="Describe your current strategic priorities..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Components -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Navigation Components</h3>
+                <div class="space-y-6">
+                    <!-- Header Navigation -->
+                    <div>
+                        <h4 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Header Navigation</h4>
+                        <div class="bg-executive-background border border-executive-border rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-executive-accent rounded-lg flex items-center justify-center p-1">
+                                        <img src="../../../public/logos/superswift-icon-black.svg" alt="SuperSwift" class="w-full h-full">
+                                    </div>
+                                    <span class="font-display font-semibold text-xl">SuperSwift</span>
+                                </div>
+                                <nav class="flex space-x-6">
+                                    <a href="#" class="text-executive-muted-foreground hover:text-executive-foreground">Dashboard</a>
+                                    <a href="#" class="text-executive-foreground">Assessment</a>
+                                    <a href="#" class="text-executive-muted-foreground hover:text-executive-foreground">Reports</a>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Navigation -->
+                    <div>
+                        <h4 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Sidebar Navigation</h4>
+                        <div class="bg-executive-background border border-executive-border rounded-lg p-4 max-w-sm">
+                            <div class="space-y-2">
+                                <!-- Brand -->
+                                <div class="flex items-center space-x-3 p-3 mb-4">
+                                    <div class="w-6 h-6 bg-executive-accent rounded-lg flex items-center justify-center p-1">
+                                        <img src="../../../public/logos/superswift-icon-black.svg" alt="SuperSwift" class="w-full h-full">
+                                    </div>
+                                    <span class="font-display font-semibold">SuperSwift</span>
+                                </div>
+                                
+                                <!-- Navigation Items -->
+                                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg bg-executive-accent text-executive-accent-foreground">
+                                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                                    <span class="font-medium">Dashboard</span>
+                                </a>
+                                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-executive-muted-foreground hover:bg-executive-muted hover:text-executive-foreground transition-colors">
+                                    <i data-lucide="brain-circuit" class="w-5 h-5"></i>
+                                    <span class="font-medium">Assessment</span>
+                                </a>
+                                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-executive-muted-foreground hover:bg-executive-muted hover:text-executive-foreground transition-colors">
+                                    <i data-lucide="chart-bar" class="w-5 h-5"></i>
+                                    <span class="font-medium">Analytics</span>
+                                </a>
+                                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-executive-muted-foreground hover:bg-executive-muted hover:text-executive-foreground transition-colors">
+                                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                                    <span class="font-medium">Reports</span>
+                                </a>
+                                
+                                <!-- Divider -->
+                                <div class="h-px bg-executive-border my-4"></div>
+                                
+                                <!-- Secondary Navigation -->
+                                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-executive-muted-foreground hover:bg-executive-muted hover:text-executive-foreground transition-colors">
+                                    <i data-lucide="settings" class="w-5 h-5"></i>
+                                    <span class="font-medium">Settings</span>
+                                </a>
+                                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-executive-muted-foreground hover:bg-executive-muted hover:text-executive-foreground transition-colors">
+                                    <i data-lucide="help-circle" class="w-5 h-5"></i>
+                                    <span class="font-medium">Help</span>
+                                </a>
+                            </div>
+                        </div>
+                        <p class="text-sm text-executive-muted-foreground mt-4">
+                            <strong>Usage:</strong> Fixed sidebar for desktop applications, collapsible for mobile
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Assessment-Specific Components -->
+        <section id="assessment-components" class="mb-16">
+            <h2 class="font-display font-semibold text-3xl mb-6" style="color: var(--executive-foreground);">Assessment-Specific Components</h2>
+            
+            <!-- Progress Components -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Progress Components</h3>
+                
+                <!-- Progress Bar -->
+                <div class="mb-8">
+                    <h4 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Progress Bar</h4>
+                    <div class="p-6 bg-executive-muted rounded-lg border border-executive-border">
+                        <div class="bg-executive-background rounded-lg p-4 border border-executive-border max-w-md">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-sm font-medium text-executive-foreground">Assessment Progress</span>
+                                <span class="text-lg font-bold text-executive-accent">24%</span>
+                            </div>
+                            <div class="h-2 bg-executive-border rounded-full overflow-hidden">
+                                <div class="h-full progress-fill rounded-full transition-all duration-300 ease-out" style="width: 24%"></div>
+                            </div>
+                            <div class="flex justify-between items-center mt-2 text-xs text-executive-muted-foreground">
+                                <span>Phase 4 of 16: Target Market</span>
+                                <span>~15 min remaining</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase Indicators -->
+                <div class="mb-8">
+                    <h4 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Phase Indicators</h4>
+                    <div class="p-6 bg-executive-muted rounded-lg border border-executive-border">
+                        <div class="flex items-center space-x-3 max-w-md">
+                            <div class="phase-dot phase-dot--completed" title="Company Overview"></div>
+                            <div class="phase-dot phase-dot--completed" title="Market Analysis"></div>
+                            <div class="phase-dot phase-dot--completed" title="Customer Profile"></div>
+                            <div class="phase-dot phase-dot--current" title="Target Market"></div>
+                            <div class="phase-dot phase-dot--pending" title="Buyer Analysis"></div>
+                            <div class="phase-dot phase-dot--pending" title="Competitive Analysis"></div>
+                            <span class="text-sm text-executive-muted-foreground ml-2">Phase 4 of 16</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validation Components -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">AI Validation Components</h3>
+                
+                <!-- Validation Container -->
+                <div class="mb-8">
+                    <h4 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Validation Container</h4>
+                    <div class="validation-container rounded-xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <h5 class="font-display font-semibold text-xl text-executive-foreground">Your Market Definition</h5>
+                            <div class="flex items-center space-x-2 bg-executive-trust text-executive-trust-foreground px-3 py-1 rounded-md text-sm font-medium">
+                                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                <span>AI Validated</span>
+                            </div>
+                        </div>
+                        <p class="text-executive-muted-foreground">
+                            Here's what we understood from your input. Please review and confirm the accuracy of our analysis.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- AI Insight Card -->
+                <div class="mb-8">
+                    <h4 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">AI Insight Card</h4>
+                    <div class="border rounded-lg p-6 max-w-md shadow-sm transition-colors duration-200" style="background: var(--executive-background); border-color: var(--executive-border);">
+                        <div class="flex items-center mb-4">
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center mr-3" style="background: var(--executive-trust);">
+                                <i data-lucide="brain-circuit" class="w-4 h-4 text-white"></i>
+                            </div>
+                            <h5 class="font-semibold text-lg" style="color: var(--executive-foreground);">Market Intelligence</h5>
+                        </div>
+                        <p class="mb-4" style="color: var(--executive-foreground);">Your company operates in a €2.4B European MedTech market with 12% annual growth.</p>
+                        <button class="btn-secondary text-sm">View Details</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Method Components -->
+            <div class="mb-12">
+                <h3 class="font-semibold text-xl mb-6" style="color: var(--executive-foreground);">Multi-Modal Input Components</h3>
+                <div class="p-6 rounded-lg border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-lg">
+                        <button class="flex flex-col items-center p-4 border-2 rounded-lg min-h-20 transition-colors duration-200" style="border-color: var(--executive-accent); background: oklch(0.6489 0.2370 26.9728 / 0.05); color: var(--executive-accent);">
+                            <i data-lucide="type" class="w-6 h-6 mb-2"></i>
+                            <span class="text-sm font-medium">Text</span>
+                        </button>
+                        <button class="flex flex-col items-center p-4 border-2 rounded-lg min-h-20 transition-colors duration-200" style="border-color: var(--executive-border); color: var(--executive-muted-foreground);" onmouseover="this.style.borderColor='var(--executive-accent)'; this.style.color='var(--executive-foreground)'" onmouseout="this.style.borderColor='var(--executive-border)'; this.style.color='var(--executive-muted-foreground)'">
+                            <i data-lucide="mic" class="w-6 h-6 mb-2"></i>
+                            <span class="text-sm font-medium">Voice</span>
+                        </button>
+                        <button class="flex flex-col items-center p-4 border-2 rounded-lg min-h-20 transition-colors duration-200" style="border-color: var(--executive-border); color: var(--executive-muted-foreground);" onmouseover="this.style.borderColor='var(--executive-accent)'; this.style.color='var(--executive-foreground)'" onmouseout="this.style.borderColor='var(--executive-border)'; this.style.color='var(--executive-muted-foreground)'">
+                            <i data-lucide="upload" class="w-6 h-6 mb-2"></i>
+                            <span class="text-sm font-medium">Upload</span>
+                        </button>
+                        <button class="flex flex-col items-center p-4 border-2 rounded-lg min-h-20 transition-colors duration-200" style="border-color: var(--executive-border); color: var(--executive-muted-foreground);" onmouseover="this.style.borderColor='var(--executive-accent)'; this.style.color='var(--executive-foreground)'" onmouseout="this.style.borderColor='var(--executive-border)'; this.style.color='var(--executive-muted-foreground)'">
+                            <i data-lucide="map" class="w-6 h-6 mb-2"></i>
+                            <span class="text-sm font-medium">Visual</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Usage Guidelines -->
+        <section id="usage" class="mb-16">
+            <h2 class="font-display font-semibold text-3xl mb-6" style="color: var(--executive-foreground);">Usage Guidelines</h2>
+            
+            <div class="space-y-8">
+                <div class="rounded-xl p-8 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                    <h3 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Component Usage</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-medium mb-3" style="color: var(--executive-foreground);">Generic Components</h4>
+                            <ul class="space-y-2 text-sm" style="color: var(--executive-muted-foreground);">
+                                <li><strong>Navigation:</strong> Use for all app navigation (header, sidebar, breadcrumbs)</li>
+                                <li><strong>Buttons:</strong> Use for all user actions (primary, secondary, accent based on importance)</li>
+                                <li><strong>Forms:</strong> Use for all data input (auth, settings, user preferences)</li>
+                                <li><strong>Cards:</strong> Use for content containers (dashboards, lists, previews)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-3" style="color: var(--executive-foreground);">Assessment-Specific Components</h4>
+                            <ul class="space-y-2 text-sm" style="color: var(--executive-muted-foreground);">
+                                <li><strong>Progress:</strong> Use only in assessment flows to show completion</li>
+                                <li><strong>Phase Indicators:</strong> Use to show assessment phase progression</li>
+                                <li><strong>Validation:</strong> Use for AI analysis and confirmation screens</li>
+                                <li><strong>Input Methods:</strong> Use for multi-modal assessment inputs</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl p-8 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                    <h3 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Accessibility Guidelines</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-medium mb-3" style="color: var(--executive-foreground);">Touch Targets</h4>
+                            <ul class="space-y-2 text-sm" style="color: var(--executive-muted-foreground);">
+                                <li>• Minimum 44px height for mobile touch targets</li>
+                                <li>• 48px minimum for primary interactive elements</li>
+                                <li>• Adequate spacing between clickable elements</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-3" style="color: var(--executive-foreground);">Color Contrast</h4>
+                            <ul class="space-y-2 text-sm" style="color: var(--executive-muted-foreground);">
+                                <li>• WCAG AA compliance for all text combinations</li>
+                                <li>• High contrast focus indicators</li>
+                                <li>• Semantic color coding with additional indicators</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Implementation -->
+        <section id="implementation" class="mb-16">
+            <h2 class="font-display font-semibold text-3xl mb-6" style="color: var(--executive-foreground);">Implementation System</h2>
+            
+            <div class="space-y-8">
+                <div class="rounded-xl p-8 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                    <h3 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">CSS Custom Properties Structure</h3>
+                    <div class="rounded-lg p-4 border transition-colors duration-200" style="background: var(--executive-background); border-color: var(--executive-border);">
+                        <pre class="text-sm font-mono overflow-x-auto" style="color: var(--executive-foreground);"><code>/* /src/styles/design-system.css */
+@import './tokens/colors.css';
+@import './tokens/typography.css';
+@import './tokens/spacing.css';
+@import './tokens/shadows.css';
+@import './components/generic.css';
+@import './components/assessment.css';</code></pre>
+                    </div>
+                </div>
+
+                <div class="rounded-xl p-8 border transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+                    <h3 class="font-semibold text-lg mb-4" style="color: var(--executive-foreground);">Implementation Checklist</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-medium mb-3" style="color: var(--executive-foreground);">Design Tokens</h4>
+                            <ul class="space-y-2 text-sm" style="color: var(--executive-muted-foreground);">
+                                <li class="flex items-center space-x-2">
+                                    <div class="w-4 h-4 border border-executive-border rounded flex items-center justify-center">
+                                        <i data-lucide="check" class="w-3 h-3 text-executive-success"></i>
+                                    </div>
+                                    <span>Replace all hardcoded colors with CSS custom properties</span>
+                                </li>
+                                <li class="flex items-center space-x-2">
+                                    <div class="w-4 h-4 border border-executive-border rounded flex items-center justify-center">
+                                        <i data-lucide="check" class="w-3 h-3 text-executive-success"></i>
+                                    </div>
+                                    <span>Apply consistent component classes across all HTML files</span>
+                                </li>
+                                <li class="flex items-center space-x-2">
+                                    <div class="w-4 h-4 border border-executive-border rounded flex items-center justify-center">
+                                        <i data-lucide="check" class="w-3 h-3 text-executive-success"></i>
+                                    </div>
+                                    <span>Ensure all touch targets meet 44px minimum requirement</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-3" style="color: var(--executive-foreground);">Quality Assurance</h4>
+                            <ul class="space-y-2 text-sm" style="color: var(--executive-muted-foreground);">
+                                <li class="flex items-center space-x-2">
+                                    <div class="w-4 h-4 border rounded" style="border-color: var(--executive-border);"></div>
+                                    <span>Validate color contrast ratios meet WCAG AA standards</span>
+                                </li>
+                                <li class="flex items-center space-x-2">
+                                    <div class="w-4 h-4 border rounded" style="border-color: var(--executive-border);"></div>
+                                    <span>Test responsive behavior on mobile and desktop</span>
+                                </li>
+                                <li class="flex items-center space-x-2">
+                                    <div class="w-4 h-4 border rounded" style="border-color: var(--executive-border);"></div>
+                                    <span>Verify style consistency across all application screens</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="px-6 py-8 border-t transition-colors duration-200" style="background: var(--executive-muted); border-color: var(--executive-border);">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm" style="color: var(--executive-muted-foreground);">
+                SuperSwift Complete Design System • Version 2.0 • January 2025<br>
+                This style guide serves as the single source of truth for SuperSwift's visual design system.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Smooth scrolling for navigation links
+        document.addEventListener('DOMContentLoaded', function() {
+            const links = document.querySelectorAll('a[href^="#"]');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+
+        // Theme System (System, Light, Dark)
+        document.addEventListener('DOMContentLoaded', function() {
+            const systemMode = document.getElementById('system-mode');
+            const lightMode = document.getElementById('light-mode');
+            const darkMode = document.getElementById('dark-mode');
+            
+            // Theme management
+            let currentTheme = localStorage.getItem('theme') || 'system';
+            
+            function getSystemPreference() {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            
+            function applyTheme(theme) {
+                // Remove existing theme classes
+                document.documentElement.classList.remove('dark');
+                
+                // Clear active states
+                document.querySelectorAll('.theme-option').forEach(btn => btn.classList.remove('active'));
+                
+                if (theme === 'system') {
+                    const systemPreference = getSystemPreference();
+                    if (systemPreference === 'dark') {
+                        document.documentElement.classList.add('dark');
+                    }
+                    systemMode.classList.add('active');
+                } else if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    darkMode.classList.add('active');
+                } else {
+                    lightMode.classList.add('active');
+                }
+                
+                currentTheme = theme;
+                localStorage.setItem('theme', theme);
+            }
+            
+            // Initialize theme
+            applyTheme(currentTheme);
+            
+            // Theme button listeners
+            systemMode.addEventListener('click', function() {
+                applyTheme('system');
+                showToast('System theme enabled');
+            });
+            
+            lightMode.addEventListener('click', function() {
+                applyTheme('light');
+                showToast('Light mode enabled');
+            });
+            
+            darkMode.addEventListener('click', function() {
+                applyTheme('dark');
+                showToast('Dark mode enabled');
+            });
+            
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+                if (currentTheme === 'system') {
+                    applyTheme('system');
+                    showToast('System theme updated');
+                }
+            });
+        });
+
+        // Interactive color swatch copying
+        document.addEventListener('DOMContentLoaded', function() {
+            const colorSwatches = document.querySelectorAll('.color-swatch');
+            colorSwatches.forEach(swatch => {
+                swatch.addEventListener('click', function() {
+                    const colorInfo = this.querySelector('.color-info').textContent;
+                    const hexMatch = colorInfo.match(/#[0-9a-fA-F]{6}/);
+                    if (hexMatch) {
+                        navigator.clipboard.writeText(hexMatch[0]).then(() => {
+                            showToast(`Copied ${hexMatch[0]}`);
+                        });
+                    }
+                });
+            });
+        });
+
+        // Toast notification utility
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.className = 'fixed top-4 right-4 px-4 py-2 rounded-lg z-50 transition-opacity duration-300';
+            toast.style.background = 'var(--executive-success)';
+            toast.style.color = 'white';
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

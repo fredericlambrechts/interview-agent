@@ -12,6 +12,7 @@ The project is built upon the **Next.js SaaS Starter Kit**, which provides a sol
 
 | Date | Version | Description | Author |
 |------|---------|-------------|--------|
+| 2025-09-20 | 3.0 | Integrated 3-tier data architecture with agent collaboration system | Winston 🏗️ |
 | 2025-09-17 | 2.0 | Consolidated architecture reflecting actual implementation | Winston 🏗️ |
 | 2025-09-17 | 1.0 | Initial architecture draft | Winston 🏗️ |
 
@@ -76,95 +77,156 @@ graph TD
 | **Cloud Hosting** | Vercel | Latest | Frontend hosting | Excellent Next.js integration |
 | **Testing** | Unit + Integration | Latest | Quality assurance | PRD testing requirements |
 
-## Data Models
+## Data Models - 3-Tier Architecture
 
-### Company Profile (Comprehensive Business Context)
+### Overview: Assessment Research → Interview → Business Intelligence Pipeline
 
-**Purpose:** Store all pre-researched information and refined data from the assessment interview for strategic consulting analysis.
+The SuperSwift Assessment system uses a **3-tier data architecture** that separates concerns across distinct data layers, each with specific purposes, retention policies, and access patterns.
+
+```
+Tier 1: Research Data (Input Layer)
+    ↓ Data Flow  
+Tier 2: Assessment Interview Data (Working Layer)
+    ↓ Data Synthesis
+Tier 3: Company Business Intelligence (MCP Target Layer)
+```
+
+### Tier 1: Research Data (Input Layer)
+
+**Purpose:** Raw intelligence from n8n research workflows  
+**Lifecycle:** Generated → Consumed → Archived (90 days)  
+**Access Pattern:** Internal processing only
 
 **Key Attributes:**
-- company_url: (string) - Company website for research
-- strategic_foundation: (jsonb) - Core business model and identity
-  - core_identity_business_model: (jsonb)
-    - company_mission_vision: (jsonb)
-      - data: (jsonb) - Mission, vision, values
-      - status: (string) - researched, confirmed, corrected
-    - core_offering_definition: (jsonb)
-      - data: (jsonb) - Product/service definitions
-      - status: (string)
-    - regulatory_pathway: (jsonb)
-      - data: (jsonb) - Compliance and regulatory framework
-      - status: (string)
-    - revenue_streams_pricing: (jsonb)
-      - data: (jsonb) - Business model and pricing strategy
-      - status: (string)
-  - customer_market_intelligence: (jsonb)
-    - market_sizing: (jsonb)
-      - data: (jsonb) - TAM, SAM, SOM analysis
-      - status: (string)
-    - clinical_evidence: (jsonb)
-      - data: (jsonb) - Clinical trials and evidence
-      - status: (string)
-    - ideal_customer_profile: (jsonb)
-      - data: (jsonb) - Target customer definitions
-      - status: (string)
-    - customer_pains_gains: (jsonb)
-      - data: (jsonb) - Customer pain points and value propositions
-      - status: (string)
-- strategy_positioning: (jsonb) - Market strategy and competitive analysis
-  - competitive_landscape: (jsonb)
-    - direct_indirect_competitors: (jsonb)
-      - data: (jsonb) - Competitor analysis
-      - status: (string)
-    - competitive_positioning_differentiation: (jsonb)
-      - data: (jsonb) - Unique value propositions
-      - status: (string)
-  - channel_go_to_market: (jsonb)
-    - channel_strategy: (jsonb)
-      - data: (jsonb) - Distribution channels
-      - status: (string)
-    - sales_process_methodology: (jsonb)
-      - data: (jsonb) - Sales process and methodology
-      - status: (string)
-    - gtm_team_structure: (jsonb)
-      - data: (jsonb) - Go-to-market team organization
-      - status: (string)
-    - partnership_alliance: (jsonb)
-      - strategic_partnership_framework: (jsonb)
-      - data: (jsonb) - Strategic partnerships
-      - status: (string)
-    - partner_enablement: (jsonb)
-      - data: (jsonb) - Partner enablement programs
-      - status: (string)
-  - brand_messaging: (jsonb)
-    - brand_positioning_statement: (jsonb)
-      - data: (jsonb) - Brand positioning
-      - status: (string)
-    - core_messaging_pillars: (jsonb)
-      - data: (jsonb) - Key messaging framework
-      - status: (string)
-- execution_operations: (jsonb) - Operational execution and measurement
-  - gtm_operations: (jsonb)
-    - quality_management_system: (jsonb)
-      - data: (jsonb) - QMS and operational processes
-      - status: (string)
-    - high_level_roadmap: (jsonb)
-      - data: (jsonb) - Strategic roadmap
-      - status: (string)
-    - gtm_process_tech_stack: (jsonb)
-      - data: (jsonb) - Technology stack and processes
-      - status: (string)
-  - performance_measurement_kpis: (jsonb)
-    - core_gtm_kpis: (jsonb)
-      - data: (jsonb) - Key performance indicators
-      - status: (string)
-    - strategic_gtm_goals: (jsonb)
-      - data: (jsonb) - Strategic goals and targets
-      - status: (string)
-  - risk_mitigation: (jsonb)
-    - comprehensive_gtm_risk: (jsonb)
-      - data: (jsonb) - Risk assessment and mitigation
-      - status: (string)
+- id: string - Primary key
+- company_url: string - Company website for research
+- research_timestamp: timestamp - When research was conducted
+- web_scraping_results: jsonb - Website and content analysis
+- social_media_analysis: jsonb - Social media presence and engagement
+- financial_data: jsonb - Financial information and metrics
+- news_mentions: jsonb - Recent news and press coverage
+- competitor_data: jsonb - Competitive analysis
+- industry_analysis: jsonb - Industry trends and context
+- llm_provider: string - Which LLM provider was used
+- confidence_scores: jsonb - Quality scores for each data type
+- source_urls: string[] - Source URLs for research data
+- processing_status: string - Research completion status
+
+### Tier 2: Assessment Interview Data (Working Layer)
+
+**Purpose:** Interview state management and user interaction tracking  
+**Lifecycle:** Created → Updated during interview → Processed → Archived (60 days)  
+**Access Pattern:** Interview agents and specific user
+
+**Key Attributes:**
+- id: string - Primary key
+- user_id: string - References users table
+- company_url: string - Company being assessed
+- research_data_id: string - References Tier 1 research
+- current_step: string - Current interview step
+- interview_status: string - Interview state (in_progress, completed)
+- step_data: jsonb - Step-by-step working data with artifact organization:
+  ```typescript
+  {
+    // 9 Assessment Steps with Artifact Structure
+    "step_1_core_identity": {
+      artifacts: {
+        "artifact_1_company_mission_vision": {
+          research_input: any;      // Original from Tier 1 research
+          user_confirmations: any;  // What user confirmed as accurate
+          user_corrections: any;    // What user corrected/changed  
+          user_additions: any;      // New information user provided
+          completion_status: 'pending' | 'in_progress' | 'completed';
+        },
+        "artifact_2_core_offering_definition": { /* same structure */ },
+        "artifact_3_regulatory_pathway": { /* same structure */ },
+        "artifact_4_revenue_streams_pricing": { /* same structure */ }
+      },
+      step_completion_status: 'pending' | 'in_progress' | 'completed';
+      open_questions: string[];     // Questions still needing validation
+      step_confidence_score: number; // 0-100 based on artifact completion
+    },
+    "step_2_customer_market": {
+      artifacts: {
+        "artifact_5_market_sizing": { /* artifact structure */ },
+        "artifact_6_clinical_evidence": { /* artifact structure */ },
+        "artifact_7_ideal_customer_profile": { /* artifact structure */ },
+        "artifact_8_customer_pains_gains": { /* artifact structure */ }
+      },
+      // ... same step-level fields
+    },
+    // ... steps 3-9 with their respective artifacts
+  }
+  ```
+- conversation_log: jsonb - Current step conversation history (step-scoped memory)
+- voice_interaction_metadata: jsonb - ElevenLabs interaction data
+- started_at: timestamp - Interview start time
+- completed_at: timestamp - Interview completion time
+- last_activity: timestamp - Last user interaction
+
+### Tier 3: Company Business Intelligence (MCP Target Layer)
+
+**Purpose:** Final, validated business intelligence for team collaboration  
+**Lifecycle:** Created from assessment → Team collaboration → Persistent  
+**Access Pattern:** MCP server routes, company team members
+
+**Key Attributes:**
+- id: string - Primary key
+- company_url: string - Unique company identifier
+
+**PART 1: STRATEGIC FOUNDATION (Steps 1-2)**
+- artifact_1_company_mission_vision: jsonb - Company Mission & Vision
+- artifact_2_core_offering_definition: jsonb - Core Offering Definition  
+- artifact_3_regulatory_pathway: jsonb - Regulatory Pathway & Classification (MedTech)
+- artifact_4_revenue_streams_pricing: jsonb - Revenue Streams & Pricing Model
+- artifact_5_market_sizing: jsonb - Market Sizing (TAM, SAM, SOM)
+- artifact_6_clinical_evidence: jsonb - Clinical Evidence & KOL Strategy (MedTech)
+- artifact_7_ideal_customer_profile: jsonb - Ideal Customer Profile & Buyer Personas
+- artifact_8_customer_pains_gains: jsonb - Customer Pains & Gains
+
+**PART 2: STRATEGY & POSITIONING (Steps 3-6)**
+- artifact_9_direct_indirect_competitors: jsonb - Direct & Indirect Competitors
+- artifact_10_competitive_positioning: jsonb - Competitive Positioning & Differentiation
+- artifact_11_channel_strategy: jsonb - Channel Strategy Overview
+- artifact_12_sales_process_methodology: jsonb - Sales Process & Methodology
+- artifact_13_gtm_team_structure: jsonb - GTM Team Structure & Roles
+- artifact_14_strategic_partnership_framework: jsonb - Strategic Partnership Framework
+- artifact_15_partner_enablement: jsonb - Partner Enablement & Incentive Models
+- artifact_16_brand_positioning_statement: jsonb - Brand Positioning Statement
+- artifact_17_core_messaging_pillars: jsonb - Core Messaging Pillars
+
+**PART 3: EXECUTION & OPERATIONS (Steps 7-9)**
+- artifact_18_quality_management_system: jsonb - Quality Management System Overview (MedTech)
+- artifact_19_implementation_roadmap: jsonb - High-Level Implementation Roadmap & Timeline
+- artifact_20_gtm_process_tech_stack: jsonb - GTM Process & Tech Stack
+- artifact_21_core_gtm_kpis: jsonb - Core GTM KPIs
+- artifact_22_strategic_gtm_goals: jsonb - Strategic GTM Goals
+- artifact_23_gtm_risk_assessment: jsonb - Comprehensive GTM Risk Assessment
+
+**Team Collaboration & Versioning:**
+- created_by: string - User who created the assessment
+- last_updated_by: string - User who last updated
+- team_access_list: string[] - User IDs with access
+- version_number: integer - Version tracking
+- change_history: jsonb - Audit trail of changes
+- created_at: timestamp - Creation time
+- updated_at: timestamp - Last update time
+
+**Entity Structure:**
+```typescript
+interface BusinessIntelEntity {
+  data: any;                    // Core business data
+  status: 'draft' | 'validated' | 'published';
+  confidence_score: number;     // 0-100
+  sources: {
+    research_derived: boolean;
+    user_validated: boolean; 
+    user_corrected: boolean;
+  };
+  last_updated: timestamp;
+  updated_by: string;
+}
+```
 
 ### Interview Session
 
@@ -191,58 +253,326 @@ graph TD
 - image: string - Profile image URL
 - createdAt/updatedAt: timestamps - Account lifecycle
 
-## Database Schema (Supabase PostgreSQL)
+## Database Schema (Supabase PostgreSQL) - 3-Tier Architecture
 
 ```sql
 -- Supabase Users Table (managed by Supabase Auth)
 -- Users are automatically created by Supabase Auth
 
--- Company Profiles with Complex JSONB Data Structure
-CREATE TABLE public.company_profiles (
+-- =================
+-- TIER 1: RESEARCH DATA (INPUT LAYER)
+-- =================
+CREATE TABLE public.research_data (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    company_url TEXT NOT NULL,
+    research_timestamp TIMESTAMPTZ DEFAULT now(),
+    
+    -- Research findings
+    web_scraping_results JSONB,
+    social_media_analysis JSONB,
+    financial_data JSONB,
+    news_mentions JSONB,
+    competitor_data JSONB,
+    industry_analysis JSONB,
+    
+    -- Processing metadata
+    llm_provider TEXT,
+    confidence_scores JSONB,
+    source_urls TEXT[],
+    processing_status TEXT DEFAULT 'pending',
+    
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Indexes for efficient research data access
+CREATE INDEX idx_research_company_url ON research_data(company_url);
+CREATE INDEX idx_research_timestamp ON research_data(research_timestamp);
+CREATE INDEX idx_research_status ON research_data(processing_status);
+
+-- =================
+-- TIER 2: ASSESSMENT INTERVIEW DATA (WORKING LAYER)
+-- =================
+CREATE TABLE public.assessment_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES auth.users(id),
     company_url TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now(),
-    strategic_foundation JSONB DEFAULT '{}'::JSONB,
-    strategy_positioning JSONB DEFAULT '{}'::JSONB,
-    execution_operations JSONB DEFAULT '{}'::JSONB
+    research_data_id UUID REFERENCES public.research_data(id),
+    
+    -- Interview state
+    current_step TEXT,
+    interview_status TEXT DEFAULT 'in_progress',
+    
+    -- Step-by-step working data
+    step_data JSONB DEFAULT '{}'::JSONB,
+    -- Structure: {
+    --   "company_overview": {
+    --     "research_input": {...},
+    --     "user_confirmations": {...},
+    --     "user_corrections": {...},
+    --     "user_additions": {...},
+    --     "completion_markers": {...},
+    --     "open_questions": [...],
+    --     "confidence_score": 85,
+    --     "completion_status": "completed"
+    --   }
+    -- }
+    
+    -- Conversation tracking (step-scoped memory)
+    conversation_log JSONB DEFAULT '[]'::JSONB,
+    voice_interaction_metadata JSONB,
+    
+    -- Session metadata
+    started_at TIMESTAMPTZ DEFAULT now(),
+    completed_at TIMESTAMPTZ,
+    last_activity TIMESTAMPTZ DEFAULT now()
 );
 
--- Interview Sessions for Conversation Management
-CREATE TABLE public.interview_sessions (
+-- Indexes for interview session management
+CREATE INDEX idx_assessment_user ON assessment_sessions(user_id);
+CREATE INDEX idx_assessment_company ON assessment_sessions(company_url);
+CREATE INDEX idx_assessment_status ON assessment_sessions(interview_status);
+CREATE INDEX idx_assessment_activity ON assessment_sessions(last_activity);
+
+-- =================
+-- TIER 3: COMPANY BUSINESS INTELLIGENCE (MCP TARGET LAYER)
+-- =================
+CREATE TABLE public.company_business_intel (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES auth.users(id),
-    company_profile_id UUID REFERENCES public.company_profiles(id),
-    conversation_log JSONB DEFAULT '[]'::JSONB,
-    current_step TEXT,
-    status TEXT NOT NULL,
+    company_url TEXT UNIQUE NOT NULL,
+    
+    -- PART 1: STRATEGIC FOUNDATION (Steps 1-2) - 8 artifacts
+    artifact_1_company_mission_vision JSONB,
+    artifact_2_core_offering_definition JSONB,
+    artifact_3_regulatory_pathway JSONB,
+    artifact_4_revenue_streams_pricing JSONB,
+    artifact_5_market_sizing JSONB,
+    artifact_6_clinical_evidence JSONB,
+    artifact_7_ideal_customer_profile JSONB,
+    artifact_8_customer_pains_gains JSONB,
+    
+    -- PART 2: STRATEGY & POSITIONING (Steps 3-6) - 9 artifacts
+    artifact_9_direct_indirect_competitors JSONB,
+    artifact_10_competitive_positioning JSONB,
+    artifact_11_channel_strategy JSONB,
+    artifact_12_sales_process_methodology JSONB,
+    artifact_13_gtm_team_structure JSONB,
+    artifact_14_strategic_partnership_framework JSONB,
+    artifact_15_partner_enablement JSONB,
+    artifact_16_brand_positioning_statement JSONB,
+    artifact_17_core_messaging_pillars JSONB,
+    
+    -- PART 3: EXECUTION & OPERATIONS (Steps 7-9) - 6 artifacts
+    artifact_18_quality_management_system JSONB,
+    artifact_19_implementation_roadmap JSONB,
+    artifact_20_gtm_process_tech_stack JSONB,
+    artifact_21_core_gtm_kpis JSONB,
+    artifact_22_strategic_gtm_goals JSONB,
+    artifact_23_gtm_risk_assessment JSONB,
+    
+    -- Multi-user collaboration
+    created_by UUID REFERENCES auth.users(id),
+    last_updated_by UUID REFERENCES auth.users(id),
+    team_access_list UUID[], -- User IDs with access
+    
+    -- Versioning and audit
+    version_number INTEGER DEFAULT 1,
+    change_history JSONB DEFAULT '[]'::JSONB,
+    
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Row Level Security (RLS) Policies
-ALTER TABLE public.company_profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.interview_sessions ENABLE ROW LEVEL SECURITY;
+-- Indexes for MCP server efficiency
+CREATE INDEX idx_business_intel_company ON company_business_intel(company_url);
+CREATE INDEX idx_business_intel_team ON company_business_intel USING GIN(team_access_list);
+CREATE INDEX idx_business_intel_updated ON company_business_intel(updated_at);
 
--- Users can only access their own data
-CREATE POLICY "Users can view own company profiles" ON public.company_profiles
+-- Individual artifact indexes for fast MCP route access
+CREATE INDEX idx_bi_artifact_1 ON company_business_intel USING GIN(artifact_1_company_mission_vision);
+CREATE INDEX idx_bi_artifact_7 ON company_business_intel USING GIN(artifact_7_ideal_customer_profile);
+CREATE INDEX idx_bi_artifact_9 ON company_business_intel USING GIN(artifact_9_direct_indirect_competitors);
+CREATE INDEX idx_bi_artifact_10 ON company_business_intel USING GIN(artifact_10_competitive_positioning);
+CREATE INDEX idx_bi_artifact_16 ON company_business_intel USING GIN(artifact_16_brand_positioning_statement);
+CREATE INDEX idx_bi_artifact_21 ON company_business_intel USING GIN(artifact_21_core_gtm_kpis);
+CREATE INDEX idx_bi_artifact_23 ON company_business_intel USING GIN(artifact_23_gtm_risk_assessment);
+
+-- =================
+-- ROW LEVEL SECURITY (RLS) POLICIES
+-- =================
+ALTER TABLE public.research_data ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.assessment_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.company_business_intel ENABLE ROW LEVEL SECURITY;
+
+-- Research data: Internal processing only (no direct user access)
+CREATE POLICY "Service role access research data" ON public.research_data
+    FOR ALL USING (auth.role() = 'service_role');
+
+-- Assessment sessions: Users can only access their own
+CREATE POLICY "Users can view own assessment sessions" ON public.assessment_sessions
     FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own company profiles" ON public.company_profiles
+CREATE POLICY "Users can insert own assessment sessions" ON public.assessment_sessions
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own company profiles" ON public.company_profiles
+CREATE POLICY "Users can update own assessment sessions" ON public.assessment_sessions
     FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can view own interview sessions" ON public.interview_sessions
-    FOR SELECT USING (auth.uid() = user_id);
+-- Business intelligence: Team-based access control
+CREATE POLICY "Users can view team business intel" ON public.company_business_intel
+    FOR SELECT USING (
+        auth.uid() = created_by OR 
+        auth.uid() = ANY(team_access_list)
+    );
 
-CREATE POLICY "Users can insert own interview sessions" ON public.interview_sessions
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can insert own business intel" ON public.company_business_intel
+    FOR INSERT WITH CHECK (auth.uid() = created_by);
 
-CREATE POLICY "Users can update own interview sessions" ON public.interview_sessions
-    FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Team members can update business intel" ON public.company_business_intel
+    FOR UPDATE USING (
+        auth.uid() = created_by OR 
+        auth.uid() = ANY(team_access_list)
+    );
+
+-- =================
+-- DATA RETENTION AND CLEANUP
+-- =================
+-- Cleanup expired research data (90 days)
+CREATE OR REPLACE FUNCTION cleanup_research_data() 
+RETURNS void AS $$
+BEGIN
+  -- Delete from hot storage
+  DELETE FROM research_data 
+  WHERE created_at < NOW() - INTERVAL '90 days';
+END;
+$$ LANGUAGE plpgsql;
+
+-- Cleanup completed assessments (60 days)
+CREATE OR REPLACE FUNCTION cleanup_assessment_sessions() 
+RETURNS void AS $$
+BEGIN
+  -- Delete personal assessment data
+  DELETE FROM assessment_sessions 
+  WHERE completed_at < NOW() - INTERVAL '60 days'
+    AND completed_at IS NOT NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Schedule cleanup jobs (requires pg_cron extension)
+-- SELECT cron.schedule('cleanup-research', '0 2 * * *', 'SELECT cleanup_research_data();');
+-- SELECT cron.schedule('cleanup-assessments', '0 3 * * *', 'SELECT cleanup_assessment_sessions();');
+```
+
+## Agent Collaboration Architecture
+
+### MVP Data Flow Pipeline
+
+```
+User Form Submission → n8n Research Workflow → Tier 1: Research Data
+Research Complete → Auto-create Assessment Session → Tier 2: Interview Data
+Interview Complete → Data Synthesis Agent → Tier 3: Business Intelligence
+```
+
+### 3-Agent Interview System + Data Synthesis
+
+**Voice Agent (Presentation Layer)**
+- **Role:** Pure ElevenLabs I/O interface
+- **Responsibilities:** Speech-to-text, text-to-speech, audio streaming
+- **Does NOT:** Interpret content, make routing decisions, update data
+
+**Interview Orchestrator Agent (Business Logic Layer)**
+- **Role:** Core interview flow management and intelligent routing
+- **Responsibilities:** 
+  - Analyze user input for intent and content
+  - Ask contextual questions based on research gaps and completion markers
+  - Route information updates to appropriate assessment sections
+  - Maintain step-scoped conversation memory
+  - Handle completed vs in-progress step behavior (responsive but not proactive on completed steps)
+- **Context Loading:** Hybrid smart loading (immediate: current step + related, lazy: full context on-demand)
+
+**Data Validation Agent (Data Management Layer)**
+- **Role:** Assessment data management (Tier 2 only)
+- **Responsibilities:**
+  - Process user confirmations, corrections, additions
+  - Update step_data with completion markers and open questions
+  - Track dynamic completion status per topic
+  - Maintain data versioning within interview session
+
+**Data Synthesis Agent (Post-Interview Processing)**
+- **Role:** Transform validated assessment data → business intelligence (Tier 2 → Tier 3)
+- **Trigger:** Assessment session marked as completed
+- **Responsibilities:**
+  - Combine research_input + user_confirmations + user_corrections + user_additions
+  - Resolve conflicts (user corrections > research data)
+  - Generate confidence scores for each business entity
+  - Create final template-based assessment report
+
+### Interview Session State Management
+
+```typescript
+interface InterviewSessionState {
+  current_step: string;
+  step_data: {
+    [stepId: string]: {
+      research_input: any;        // From Tier 1 research
+      user_confirmations: any;    // What user confirmed as accurate
+      user_corrections: any;      // What user corrected/changed
+      user_additions: any;        // New information user provided
+      completion_markers: {       // Dynamic completion tracking
+        [topic: string]: 'researched' | 'confirmed' | 'corrected' | 'missing';
+      };
+      open_questions: string[];   // Questions still needing validation
+      confidence_score: number;   // 0-100 based on user validation
+      completion_status: 'pending' | 'in_progress' | 'completed';
+    };
+  };
+  conversation_context: {
+    current_topic: string;
+    session_quality_score: number;
+  };
+}
+```
+
+### Interview Step Architecture
+
+**9-Step Assessment Structure:**
+```
+PART 1: STRATEGIC FOUNDATION
+├── Step 1: Core Identity & Business Model (4 artifacts)
+└── Step 2: Customer & Market Intelligence (4 artifacts)
+
+PART 2: STRATEGY & POSITIONING  
+├── Step 3: Competitive Landscape (2 artifacts)
+├── Step 4: Channel & Go-to-Market Approach (3 artifacts)
+├── Step 5: Partnership & Alliance Strategy (2 artifacts)
+└── Step 6: Brand & Messaging (2 artifacts)
+
+PART 3: EXECUTION & OPERATIONS
+├── Step 7: GTM Operations & Execution Plan (3 artifacts)
+├── Step 8: Performance Measurement & KPIs (2 artifacts)
+└── Step 9: Risk & Mitigation (1 artifact)
+```
+
+**Artifact-Based Interaction:**
+- **UI Design:** Each step displays artifacts with visual dividers/separators
+- **Question Strategy:** Dynamic questions per artifact based on research gaps and completion status
+- **Navigation:** Users can skip between steps with warnings for incomplete artifacts
+- **Completion Tracking:** Per-artifact completion status within each step
+- **Agent Memory:** Step-scoped conversation memory (fresh start per step)
+- **Research Prompt:** Embedded in n8n workflow, structured to feed 23 artifacts
+
+### User Experience Flow
+
+```
+1. User submits company URL form
+2. n8n research workflow processes company data → Tier 1
+3. Research completion auto-creates assessment session → Tier 2
+4. User enters interview with smart context loading
+5. Interview Orchestrator asks dynamic questions based on data gaps
+6. Data Validation Agent updates step_data with user responses
+7. User navigates between steps (guided progression + skip warnings)
+8. User completes final step → triggers processing UI
+9. Data Synthesis Agent processes Tier 2 → Tier 3 (async)
+10. User receives template-based assessment report
 ```
 
 ## Project Structure (Monorepo - Target State)

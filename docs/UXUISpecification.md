@@ -2,7 +2,14 @@
 
 ## **Introduction**
 
-This document defines the user experience goals, information architecture, user flows, and visual design specifications for SuperSwift's user interface. It serves as the foundation for visual design and frontend development, ensuring a cohesive and user-centered experience.
+This document defines the user experience goals, information architecture, user flows, and visual design specifications for SuperSwift's Assessment Interview Agent user interface. It serves as the foundation for visual design and frontend development of the artifact-based, voice-first interview system with 3-agent collaboration architecture.
+
+### **Change Log**
+
+| Date | Version | Description | Author |
+|------|---------|-------------|---------|
+| 2025-09-20 | 2.0 | Updated with 9-step assessment, 23-artifact structure, and 3-agent architecture | Winston 🏗️ |
+| 2025-09-17 | 1.0 | Initial UX/UI specification | Sally (UX Expert) |
 
 ### **Overall UX Goals & Principles**
 
@@ -27,52 +34,181 @@ This document defines the user experience goals, information architecture, user 
 
 #### **Site Map / Screen Inventory**
 
-The primary user journey is a simple, linear flow with three key screens.
+The complete assessment workflow includes research, interview, processing, and reporting phases.
 
+```mermaid
 graph TD  
-    A\[Landing/Start Screen\] \--\> B\[Interview Interface\]  
-    B \--\> C\[Summary View\]
+    A[Company URL Form] --> B[Research Progress Page]
+    B --> C[Interview Landing Page]
+    C --> D[Interview Interface - 9 Steps]
+    D --> E[Processing Screen]
+    E --> F[Assessment Report]
+    
+    D --> D1[Step 1: Core Identity - 4 artifacts]
+    D --> D2[Step 2: Customer Market - 4 artifacts]
+    D --> D3[Step 3: Competitive Landscape - 2 artifacts]
+    D --> D4[Step 4: Channel GTM - 3 artifacts]
+    D --> D5[Step 5: Partnership Strategy - 2 artifacts]
+    D --> D6[Step 6: Brand Messaging - 2 artifacts]
+    D --> D7[Step 7: GTM Operations - 3 artifacts]
+    D --> D8[Step 8: Performance KPIs - 2 artifacts]
+    D --> D9[Step 9: Risk Mitigation - 1 artifact]
+```
 
 #### **Navigation Structure**
 
-* **Primary Navigation:** A simple, linear navigation where the user is guided from one screen to the next without a traditional menu system.  
-* **Breadcrumb Strategy:** Not required for the MVP due to the linear nature of the flow.
+* **Primary Navigation:** Progressive workflow with step navigation within interview phase
+* **Interview Navigation:** 9-step progress indicator with artifact completion tracking
+* **Step Navigation:** Guided progression with skip-ahead warnings for incomplete artifacts
+* **Breadcrumb Strategy:** Part > Step > Artifact hierarchy for complex assessment structure
 
 ### **User Flows**
 
-#### **Assessment Interview Flow**
+#### **Complete Assessment Workflow**
 
-**User Goal:** The user wants to complete the interview to provide business context through a simple, open-ended conversation.
+**User Goal:** Complete a comprehensive go-to-market strategy assessment through an AI-guided interview process.
 
-**Entry Points:** The "Start Assessment" button on the landing screen.
+**Entry Points:** Company URL submission form.
 
-**Success Criteria:** The user successfully completes the three-question interview and is presented with a summary.
+**Success Criteria:** User receives a complete template-based assessment report with validated business intelligence.
 
-#### **Flow Diagram**
+#### **Primary Flow Diagram**
 
+```mermaid
 graph TD  
-    A\[User clicks 'Start Assessment'\] \--\> B\[Agent asks Question 1\]  
-    B \--\> C\[User responds to Question 1\]  
-    C \--\> D\[Agent asks Question 2\]  
-    D \--\> E\[User responds to Question 2\]  
-    E \--\> F\[Agent asks Question 3\]  
-    F \--\> G\[User responds to Question 3\]  
-    G \--\> H\[Agent summarizes interview\]  
-    H \--\> I\[User views summary\]
+    A[User submits Company URL] --> B[Research workflow processes data]
+    B --> C[Research progress indicator shows completion]
+    C --> D[Assessment session auto-created]
+    D --> E[User enters interview with smart context loading]
+    E --> F[Interview Orchestrator asks dynamic questions per artifact]
+    F --> G[Data Validation Agent updates step data]
+    G --> H[User navigates between steps - guided progression]
+    H --> I[User completes final step - triggers processing UI]
+    I --> J[Data Synthesis Agent processes Tier 2 → Tier 3]
+    J --> K[User receives template-based assessment report]
+```
+
+#### **Interview Step Interaction Flow**
+
+**Voice-First Interaction with Artifact Structure:**
+
+```mermaid
+graph TD
+    A[User lands on step] --> B[Voice Agent loads - fresh audio state]
+    B --> C[Interview Orchestrator loads step research + artifacts]
+    C --> D[Dynamic questions based on artifact completion markers]
+    D --> E[User voice input → Voice Agent transcription]
+    E --> F[Interview Orchestrator analyzes intent & routes]
+    F --> G[Data Validation Agent updates artifact data]
+    G --> H[Voice Agent synthesizes response]
+    H --> I{Artifact complete?}
+    I -->|No| D
+    I -->|Yes| J[Move to next artifact or step]
+```
+
+#### **Artifact-Based UI Interaction**
+
+**Visual Separation and Completion Tracking:**
+
+- **Artifact Separators:** Visual dividers between artifacts within each step
+- **Completion Indicators:** Per-artifact status (pending, in-progress, completed)
+- **Voice Integration:** Voice controls maintain state across artifact interactions
+- **Step Navigation:** Users can skip ahead with warnings for incomplete artifacts
 
 ### **Wireframes & Mockups**
 
 #### **Key Screen Layouts**
 
-* **Landing/Start Screen:** A full-screen form that collects the user's **Name**, **Role**, and **Company URL**. The layout will be simple and professional, with a clear headline and a single, prominent call-to-action button.  
-* **Interview Interface:** A two-pane layout, inspired by the ElevenLabs UI. The main panel will present pre-computed research, and the lower-left pane will host the voice-based conversation. The navigation will be streamlined to only indicate the **Phase Name** and **Current Step Name**.  
-* **Summary View:** A polished, document-like interface organized into distinct sections using cards or panels, mirroring the provided screenshot. It will feature a professional report and a clear call to action to **create an account**.
+**1. Company URL Form**
+- Clean, professional input form for company URL submission
+- Single prominent CTA button to start research process
+- Clear messaging about what happens next
+
+**2. Research Progress Page**
+- Progress indicator showing n8n workflow status
+- Estimated completion time (typically 2-5 minutes)
+- Clear messaging about research activities being performed
+
+**3. Interview Landing Page**
+- Welcome message with assessment session auto-created
+- Overview of 9-step assessment process (3 parts, 23 artifacts)
+- Voice interface introduction and browser permissions
+- Clear CTA to begin interview
+
+**4. Interview Interface - Artifact-Based Layout**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ PART 1: STRATEGIC FOUNDATION • Step 1/9: Core Identity     │
+│ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ │
+│ │ Step 1 │ Step 2 │ │ Step 3 │ Step 4 │ │ Step 5 │ Step 6 │ │
+│ │ ●●●●   │ ○○○○   │ │ ○○     │ ○○○    │ │ ○○     │ ○○     │ │
+│ └─────────────────┘ └─────────────────┘ └─────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│ ┌─ ARTIFACT 1: Company Mission & Vision ─────────── ✓ ──┐   │
+│ │ [Research Data] + [User Confirmations/Corrections]    │   │
+│ │ [Voice Controls: 🎤 🔊 Status: Ready]                │   │
+│ ├─────────────────────────────────────────────────────────┤   │
+│ ┌─ ARTIFACT 2: Core Offering Definition ─────────── ⏳ ─┐   │
+│ │ [Research Data] + [Voice Interaction Area]            │   │
+│ │ [Voice Controls: 🎤 🔊 Status: In Progress]           │   │
+│ ├─────────────────────────────────────────────────────────┤   │
+│ ┌─ ARTIFACT 3: Regulatory Pathway ──────────────── ○ ───┐   │
+│ │ [Research Data] + [Pending User Input]                │   │
+│ │ [Voice Controls: 🎤 🔊 Status: Pending]               │   │
+│ └─────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**5. Processing Screen**
+- Clear progress indicator with estimated time (30-60 seconds)
+- Messaging about data synthesis happening
+- No user interaction required during processing
+
+**6. Assessment Report**
+- Professional document layout organized by 3 parts
+- Each artifact presented with validated data
+- Template-based structure with business intelligence
+- Clear next steps and account creation CTA
 
 ### **Component Library / Design System**
 
-* **Design System Approach:** We will adopt the shadcn/ui style as our base and apply our custom colors and brand voice on top of it.  
-* **Core Components:** We will need a suite of core components, including but not limited to, buttons, input fields, a text area, and a card component for the summary view. We will also need a custom progress indicator and a component for the conversational agent pane.  
-* **Iconography:** We will use professional icons to guide the user, not emojis. A specific icon library will be chosen later.
+**Design System Approach:** shadcn/ui with SuperSwift Design System overlay (Executive Professional theme)
+
+#### **Core Assessment Components**
+
+**Progress & Navigation:**
+- `AssessmentProgress` - 9-step progress indicator with part grouping
+- `StepNavigation` - Step switching with completion warnings
+- `ArtifactProgress` - Per-artifact completion indicators
+- `PartHeader` - Strategic Foundation / Strategy & Positioning / Execution headers
+
+**Artifact Display Components:**
+- `ArtifactCard` - Individual artifact container with visual separators
+- `ArtifactHeader` - Artifact title with completion status icons
+- `ResearchDataDisplay` - Formatted research findings presentation
+- `UserValidationArea` - Confirmations, corrections, additions display
+
+**Voice Interface Components:**
+- `VoiceAgent` - Pure I/O interface with transcription/synthesis
+- `VoiceControls` - Microphone, speaker, status indicators
+- `VoiceStatus` - Visual feedback for recording/playing states
+- `AudioLevelIndicator` - Voice activity detection feedback
+
+**Interview Flow Components:**
+- `InterviewOrchestrator` - Business logic coordinator (hidden UI component)
+- `DynamicQuestionDisplay` - Context-aware question presentation
+- `StepCompletionTracker` - Open questions and completion markers
+
+**Processing & Report Components:**
+- `ProcessingScreen` - Data synthesis progress UI
+- `AssessmentReport` - Template-based final report layout
+- `BusinessIntelligenceCard` - Validated artifact presentation
+
+#### **Enhanced shadcn Integration**
+- Leverage shadcn MCP for component discovery and patterns
+- Follow SuperSwift Design System color palette and typography
+- Maintain accessibility standards across all voice interactions
+- Use professional icons (no emojis) for all status indicators
 
 ### **Branding & Style Guide**
 

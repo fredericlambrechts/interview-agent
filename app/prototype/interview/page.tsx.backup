@@ -1,0 +1,301 @@
+"use client"
+
+import React, { useState, useEffect } from 'react'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { 
+  Users,
+  Target,
+  DollarSign,
+  TrendingUp,
+  MessageCircle
+} from "lucide-react"
+import Link from "next/link"
+import Script from "next/script"
+
+export default function PrototypeInterviewPage() {
+  const [activeTab, setActiveTab] = useState('icp')
+  const [widgetLoaded, setWidgetLoaded] = useState(false)
+
+  // Sample research data
+  const icpData = [
+    {
+      segment: "Academic Medical Centers",
+      example: "Mayo, UCSF",
+      persona: "Chief of Neuroradiology",
+      painPoints: ["High scan volumes", "Need for research-grade data"],
+      gains: ["Publication opportunities", "Grant funding"]
+    },
+    {
+      segment: "Community Hospitals", 
+      example: "HCA, Tenet",
+      persona: "Radiology Director",
+      painPoints: ["Budget constraints", "Skepticism about AI"],
+      gains: ["Workflow efficiency", "Competitive differentiation"]
+    },
+    {
+      segment: "MS Centers of Excellence",
+      example: "Cleveland Clinic",
+      persona: "MS Neurologist", 
+      painPoints: ["Lesion monitoring is time-consuming", "Need for objective progression metrics"],
+      gains: ["Better patient stratification", "Clinical trial recruitment"]
+    },
+    {
+      segment: "Pharma (Alzheimer's)",
+      example: "Big Pharma",
+      persona: "Clinical Trial Imaging Lead",
+      painPoints: ["High screen-fail rates", "Site variability in scans"],
+      gains: ["Faster enrollment", "Regulatory acceptance"]
+    }
+  ]
+
+  return (
+    <div className="min-h-screen bg-white font-inter">
+      {/* Navigation Bar */}
+      <nav className="bg-white border-b px-6 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            {/* Part 1 - Active */}
+            <button 
+              onClick={() => setActiveTab('icp')}
+              className={`flex items-center gap-3 px-4 py-2 rounded-full transition-colors ${
+                activeTab === 'icp' ? 'bg-superswift-orange-bg text-superswift-orange' : 'text-superswift-gray-text hover:text-superswift-black'
+              }`}
+            >
+              <span className="font-medium">PART 1</span>
+            </button>
+
+            {/* Part 2 */}
+            <button 
+              onClick={() => setActiveTab('market')}
+              className={`flex items-center gap-3 px-4 py-2 rounded-full transition-colors ${
+                activeTab === 'market' ? 'bg-superswift-orange-bg text-superswift-orange' : 'text-superswift-gray-text hover:text-superswift-black'
+              }`}
+            >
+              <span className="font-medium">PART 2</span>
+            </button>
+
+            {/* Part 3 */}
+            <button 
+              onClick={() => setActiveTab('growth')}
+              className={`flex items-center gap-3 px-4 py-2 rounded-full transition-colors ${
+                activeTab === 'growth' ? 'bg-superswift-orange-bg text-superswift-orange' : 'text-superswift-gray-text hover:text-superswift-black'
+              }`}
+            >
+              <span className="font-medium">PART 3</span>
+            </button>
+          </div>
+
+          <div className="text-sm text-superswift-gray-text">
+            MARKET POSITION
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content Area - Research Data - Full Width */}
+      <div className="w-full p-6 overflow-y-auto pb-24 main-content-area">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-10 w-10 bg-superswift-orange-bg rounded-lg flex items-center justify-center">
+                <Users className="h-5 w-5 text-superswift-orange" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-superswift-black">
+                  Ideal Customer Profile (ICP) & Buyer Personas
+                </h2>
+                <p className="text-sm text-superswift-gray-text">Research findings from your company website and market analysis</p>
+              </div>
+            </div>
+          </div>
+
+          {/* ICP Data Table */}
+          <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-superswift-gray border-b">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-superswift-black">ICP Segment</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-superswift-black">Buyer Persona</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-superswift-black">Pain Points</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-superswift-black">Gains</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {icpData.map((row, index) => (
+                    <tr key={index} className="hover:bg-superswift-gray transition-colors">
+                      <td className="px-6 py-4">
+                        <div>
+                          <div className="font-medium text-superswift-black">{row.segment}</div>
+                          <div className="text-sm text-superswift-gray-text">(e.g., {row.example})</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-superswift-black">{row.persona}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <ul className="text-sm text-superswift-gray-text space-y-1">
+                          {row.painPoints.map((point, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-red-500 mt-1">•</span>
+                              <span>{point}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                      <td className="px-6 py-4">
+                        <ul className="text-sm text-superswift-gray-text space-y-1">
+                          {row.gains.map((gain, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-green-500 mt-1">•</span>
+                              <span>{gain}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Additional Research Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Target className="h-4 w-4 text-superswift-orange" />
+                  <CardTitle className="text-base">Market Size</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-superswift-black">$4.2B</div>
+                <p className="text-sm text-superswift-gray-text">TAM for medical imaging AI</p>
+                <div className="mt-2 text-sm text-green-600 flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3" />
+                  23% CAGR through 2028
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-superswift-orange" />
+                  <CardTitle className="text-base">Revenue Model</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-superswift-black">SaaS</div>
+                <p className="text-sm text-superswift-gray-text">Annual enterprise licenses</p>
+                <div className="mt-2 text-sm text-superswift-gray-text">
+                  $50-250K ACV typical
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-superswift-orange" />
+                  <CardTitle className="text-base">Competition</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-superswift-black">Fragmented</div>
+                <p className="text-sm text-superswift-gray-text">No dominant player yet</p>
+                <div className="mt-2 text-sm text-superswift-gray-text">
+                  5-7 key competitors
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Status indicator for voice interview */}
+          <div className="fixed top-20 right-6 z-10">
+            <Card className="shadow-lg border border-superswift-orange-light bg-white/95 backdrop-blur">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 bg-superswift-orange rounded-full animate-pulse" />
+                  <div className="text-sm font-medium text-superswift-black">Voice Interview Active</div>
+                  <Link href="/prototype/summary">
+                    <Button size="sm" variant="outline" className="ml-2">
+                      End Interview
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* ElevenLabs Widget Container */}
+      <div className="elevenlabs-widget-container">
+        <elevenlabs-convai 
+          agent-id="agent_3701k5bdgncmevhspegh2ja47ftc"
+        />
+      </div>
+
+      {/* ElevenLabs ConvAI Script */}
+      <Script 
+        src="https://unpkg.com/@elevenlabs/convai-widget-embed" 
+        strategy="afterInteractive"
+        onLoad={() => setWidgetLoaded(true)}
+      />
+
+      {/* Custom Styles for Widget Positioning */}
+      <style jsx global>{`
+        /* ElevenLabs Widget Positioning Best Practices */
+        elevenlabs-convai {
+          position: fixed !important;
+          bottom: 24px !important;
+          right: 24px !important;
+          z-index: 50 !important;
+          max-width: min(400px, calc(100vw - 48px)) !important;
+          transition: all 0.3s ease !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          elevenlabs-convai {
+            bottom: 16px !important;
+            right: 16px !important;
+            left: 16px !important;
+            max-width: calc(100vw - 32px) !important;
+          }
+        }
+
+        /* Ensure widget doesn't block scrolling */
+        .elevenlabs-widget-container {
+          pointer-events: none;
+        }
+
+        elevenlabs-convai * {
+          pointer-events: auto;
+        }
+
+        /* Add subtle shadow to distinguish from content */
+        elevenlabs-convai > div {
+          box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+          border-radius: 12px !important;
+        }
+
+        /* Ensure content has breathing room */
+        .main-content-area {
+          padding-bottom: 120px;
+        }
+
+        /* Hide widget on very small screens if needed */
+        @media (max-height: 500px) {
+          elevenlabs-convai {
+            transform: scale(0.9);
+          }
+        }
+      `}</style>
+    </div>
+  )
+}

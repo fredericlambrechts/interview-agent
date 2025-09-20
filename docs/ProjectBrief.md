@@ -1,8 +1,12 @@
 # **Project Brief: SuperSwift Assessment Interview Agent**
 
+**Version:** 2.0  
+**Last Updated:** 2025-09-20  
+**Status:** Updated with 3-Tier Architecture & 23-Artifact Assessment System
+
 ## **Executive Summary**
 
-SuperSwift is an AI-first strategic business consulting platform that automates go-to-market (GTM) intelligence. This prototype represents the foundation of the platform: an AI-powered interview agent that conducts natural, conversational business assessments to capture critical context. This agent will validate a voice-first approach to discovery, build user trust, and establish the data pipeline necessary to automate the generation of strategic assets and growth plans for medtech companies.
+SuperSwift is an AI-first strategic business consulting platform that automates comprehensive go-to-market (GTM) intelligence through a sophisticated 3-agent collaboration system. This advanced implementation features a 23-artifact assessment framework organized across 9 structured interview steps, supported by a 3-tier data architecture that seamlessly integrates research automation, voice-first interviews, and persistent business intelligence for medtech companies.
 
 ## **Problem Statement**
 
@@ -10,7 +14,24 @@ Traditional business assessment processes often rely on forms and static questio
 
 ## **Proposed Solution**
 
-The proposed solution is a minimal viable prototype of the SuperSwift Assessment Interview Agent. This agent will automate the critical first step of strategic consulting by conducting structured business discovery through natural voice interaction. The goal is to lay the groundwork for a platform that can capture rich business context, build trust with users, and accelerate time-to-value by delivering strategic assets and growth plans in minutes instead of days.
+The SuperSwift Assessment Interview Agent is a comprehensive voice-first business intelligence system featuring:
+
+### **3-Agent Collaboration Architecture**
+- **Voice Agent:** Pure ElevenLabs I/O interface for speech processing
+- **Interview Orchestrator:** Intelligent routing and dynamic question generation
+- **Data Validation Agent:** Real-time artifact validation and completion tracking
+
+### **23-Artifact Assessment Framework**
+- **Strategic Foundation:** 8 artifacts across core identity and market intelligence
+- **Strategy & Positioning:** 9 artifacts covering competitive landscape and go-to-market approach
+- **Execution & Operations:** 6 artifacts for performance measurement and risk mitigation
+
+### **3-Tier Data Architecture**
+- **Tier 1:** Automated research data from n8n workflows (90-day retention)
+- **Tier 2:** Assessment interview working data with step-by-step validation (60-day retention)
+- **Tier 3:** Persistent business intelligence with team collaboration and MCP access
+
+This system transforms traditional business discovery from static forms to dynamic, AI-orchestrated conversations that generate comprehensive strategic intelligence.
 
 ## **Target Users**
 
@@ -37,36 +58,87 @@ The proposed solution is a minimal viable prototype of the SuperSwift Assessment
 
 ### **MVP Success Criteria**
 
-* **Conversational AI:** The agent must be able to conduct a structured business discovery through natural voice interaction.  
-* **Data Collection:** The prototype must successfully create a data collection pipeline that feeds strategic asset generation.  
-* **User Acceptance:** The prototype must test and validate user acceptance of AI-conducted business interviews.
+* **3-Agent Collaboration:** Voice Agent, Interview Orchestrator, and Data Validation Agent work seamlessly together
+* **23-Artifact Assessment:** Complete capture and validation of all strategic business intelligence artifacts
+* **Research Integration:** Automated n8n workflow integration with assessment session creation
+* **Voice-First Experience:** Natural conversation flow with artifact-based UI and step navigation
+* **Business Intelligence Output:** Template-based assessment reports with validated data
 
 ## **MVP Scope**
 
 ### **Core Features (Must Have)**
 
-* **Voice-First Assessment Interview:** The agent must be able to ask and receive responses to a structured set of business discovery questions using natural voice.  
-* **Data Collection Pipeline:** The agent must be able to store the collected business context data.  
-* **Conversation Flow Management:** The agent must be able to guide the conversation through a structured interview while allowing for conversational nuance.
+* **Automated Research Pipeline:** n8n workflows process company data and auto-create assessment sessions
+* **9-Step Assessment Interview:** Structured progression through Strategic Foundation, Strategy & Positioning, and Execution & Operations
+* **Artifact-Based UI:** Visual separators and completion tracking for all 23 business artifacts
+* **Voice-First Interaction:** ElevenLabs integration with step-scoped memory and dynamic question generation
+* **3-Tier Data Flow:** Research data → Interview validation → Business intelligence with team collaboration
+* **Processing & Report Generation:** Data synthesis with template-based go-to-market strategy assessment
+
+### **Advanced Features Included**
+
+* **Smart Context Loading:** Hybrid loading (current step + related data, lazy load full context)
+* **Dynamic Question Generation:** Based on research gaps and artifact completion markers
+* **Team Collaboration:** Multi-user access control and change history for business intelligence
+* **MCP Integration:** 23 artifact-based routes for external tool access
+* **Data Retention Policies:** Automated cleanup with 90/60-day retention for cost optimization
 
 ### **Out of Scope for MVP**
 
-* Strategic asset or growth plan generation.  
-* Competitor monitoring or LinkedIn intelligence.  
-* Full platform functionality beyond the assessment interview agent.
+* Live competitor monitoring beyond initial research
+* Advanced analytics dashboard
+* Multi-company comparison features
+* Enterprise SSO integration
 
-## **Technical Considerations**
+## **Technical Architecture**
 
-* **Source Tree:** The project will be built using the nextjs-starter-kit from https://github.com/michaelshimeles/nextjs-starter-kit.  
-* **Server-Side Code:** Serverless code will be hosted on Deno.com.  
-* **Data Storage:** Data will be stored in Supabase via edge functions.  
-* **Backend Hosting:** N8N workflows will be hosted at https://n8n.srv758490.hstgr.cloud.
+### **Core Platform Stack**
+* **Frontend Framework:** Next.js with shadcn/ui component library
+* **Database:** Supabase PostgreSQL with 3-tier architecture (research_data, assessment_sessions, company_business_intel)
+* **Backend Runtime:** Deno Edge Functions for serverless business logic
+* **Voice Integration:** ElevenLabs API for speech-to-text and text-to-speech
+* **Workflow Engine:** N8N for automated research pipeline (hosted at https://n8n.srv758490.hstgr.cloud)
+
+### **Agent Architecture Implementation**
+* **Voice Agent:** Pure presentation layer handling ElevenLabs I/O
+* **Interview Orchestrator:** Business logic layer with smart context loading and dynamic questioning
+* **Data Validation Agent:** Data management layer for artifact validation and completion tracking
+* **Data Synthesis Agent:** Post-interview processing for Tier 2 → Tier 3 business intelligence synthesis
+
+### **Data Flow Architecture**
+```
+User Form → n8n Research → Tier 1 (research_data)
+Research Complete → Auto-create Assessment → Tier 2 (assessment_sessions)  
+Interview Process → Artifact Validation → Step-by-step completion
+Interview Complete → Data Synthesis → Tier 3 (company_business_intel)
+Final Report → Template-based Assessment → MCP-accessible Business Intelligence
+```
+
+### **Integration & Tool Support**
+* **MCP Protocol:** 23 artifact-based business intelligence routes
+* **Row Level Security:** User isolation and team-based access control
+* **Data Retention:** Automated cleanup functions (90-day research, 60-day interview data)
+* **Type Safety:** Generated TypeScript types from database schema
+* **Real-time Updates:** Supabase real-time subscriptions for interview progress
 
 ## **Constraints & Assumptions**
 
-* **Focus:** This project is a minimal prototype to validate core concepts, not a production-ready application.  
-* **Timeline:** The timeline for this prototype is short, focusing on demonstrating core functionality as quickly as possible.  
-* **Resources:** We will leverage the provided starter kit and the specified backend services to accelerate development.
+### **Development Constraints**
+* **Architecture Complexity:** 3-tier database with 23 artifacts requires careful data modeling and validation
+* **Agent Coordination:** 3-agent collaboration system needs precise interface contracts and error handling
+* **Voice Integration:** ElevenLabs API integration must maintain sub-2-second response times for natural conversation
+* **Research Quality:** n8n workflow reliability directly impacts assessment data quality
+
+### **Technical Assumptions**
+* **Supabase Scalability:** PostgreSQL with JSONB can handle complex artifact structures at scale
+* **MCP Performance:** 23 artifact routes will maintain <200ms response times for business intelligence access
+* **Voice API Reliability:** ElevenLabs provides consistent transcription and synthesis quality
+* **Data Retention:** 90/60-day retention policies will optimize storage costs while maintaining audit compliance
+
+### **Business Assumptions**
+* **User Acceptance:** C-suite executives will engage with 30-60 minute voice-first assessment interviews
+* **Artifact Completeness:** 23-artifact framework captures sufficient business intelligence for strategic consulting
+* **Research Automation:** n8n workflows can gather adequate company data for meaningful interview context
 
 ## **Next Steps**
 
