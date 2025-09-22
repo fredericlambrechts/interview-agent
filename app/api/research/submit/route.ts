@@ -1,21 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import fetch from 'node-fetch'
 
-// In-memory storage for research status (replace with database later)
-declare global {
-  var researchStatusMap: Map<string, any>
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+async function updateResearchStatus(researchId: string, companyUrl: string, status: any) {
+  const { error } = await supabase
+    .from('research_data')
+    .upsert({
+      research_id: researchId,
+      company_url: companyUrl,
+      ...status
+    }, {
+      onConflict: 'research_id'
+    })
+  
+  if (error) {
+    console.error('Database update error:', error)
+    throw new Error('Failed to update research status')
+  }
 }
 
-if (!global.researchStatusMap) {
-  global.researchStatusMap = new Map()
-}
-
-function updateResearchStatus(researchId: string, status: any) {
-  global.researchStatusMap.set(researchId, status)
-}
-
-function getResearchStatus(researchId: string) {
-  return global.researchStatusMap.get(researchId)
+async function getResearchStatus(researchId: string) {
+  const { data, error } = await supabase
+    .from('research_data')
+    .select('*')
+    .eq('research_id', researchId)
+    .single()
+  
+  if (error && error.code !== 'PGRST116') {
+    console.error('Database fetch error:', error)
+    throw new Error('Failed to get research status')
+  }
+  
+  return data
 }
 
 const submitSchema = z.object({
@@ -30,20 +53,24 @@ export async function POST(request: NextRequest) {
     // Generate research session ID
     const researchId = `research_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-    // TODO: Insert initial record into research_data table
     console.log(`Starting SuperSwift GTM research for: ${companyUrl} with ID: ${researchId}`)
 
-    // Initialize research status
-    updateResearchStatus(researchId, {
-      status: 'strategic_foundation',
-      progress: 5,
-      message: 'Initializing SuperSwift GTM analysis...',
-      currentPhase: 'STRATEGIC FOUNDATION',
-      currentStep: 'Step 1: Core Identity & Business Model',
-      artifactsCompleted: 0,
-      totalArtifacts: 23,
-      estimatedTimeRemaining: 300
-    })
+    // Insert initial record into research_data table
+    const { error: insertError } = await supabase
+      .from('research_data')
+      .insert({
+        research_id: researchId,
+        company_url: companyUrl,
+        status: 'strategic_foundation',
+        progress_percentage: 5,
+        current_phase: 'STRATEGIC FOUNDATION',
+        artifacts_completed: 0
+      })
+
+    if (insertError) {
+      console.error('Database insert error:', insertError)
+      throw new Error('Failed to create research record')
+    }
 
     // Trigger Mistral research analysis in background
     triggerMistralResearch(researchId, companyUrl)
@@ -89,11 +116,10 @@ async function performMistralAnalysis(researchId: string, companyUrl: string) {
   
   if (!mistralApiKey) {
     console.error('MISTRAL_API_KEY not configured')
-    updateResearchStatus(researchId, {
-      status: 'error',
-      progress: 0,
-      message: 'Mistral API key not configured',
-      error: 'Configuration error'
+    updateResearchStatus(researchId, companyUrl, {
+      status: 'failed',
+      progress_percentage: 0,
+      current_phase: 'ERROR'
     })
     return
   }
@@ -103,20 +129,17 @@ async function performMistralAnalysis(researchId: string, companyUrl: string) {
     { delay: 10000, progress: 20, phase: 'Strategic Foundation', step: 'Analyzing core identity and business model', artifacts: 3 },
     { delay: 30000, progress: 45, phase: 'Strategic Foundation', step: 'Customer & market intelligence research', artifacts: 8 },
     { delay: 50000, progress: 65, phase: 'Strategy & Positioning', step: 'Competitive landscape analysis', artifacts: 12 },
-    { delay: 80000, progress: 85, phase: 'Execution & Operations', step: 'Implementation roadmap & risk assessment', artifacts: 20 }
+    { delay: 80000, progress: 85, phase: 'Execution & Operations', step: 'Implementation roadmap & risk assessment', artifacts: 20 },
+    { delay: 100000, progress: 100, phase: 'Execution & Operations', step: 'Finalizing assessment', artifacts: 23 }
   ]
 
   progressUpdates.forEach(({ delay, progress, phase, step, artifacts }) => {
-    setTimeout(() => {
-      updateResearchStatus(researchId, {
-        status: progress < 45 ? 'strategic_foundation' : progress < 85 ? 'strategy_positioning' : 'execution_operations',
-        progress,
-        message: `${step}...`,
-        currentPhase: phase.toUpperCase(),
-        currentStep: step,
-        artifactsCompleted: artifacts,
-        totalArtifacts: 23,
-        estimatedTimeRemaining: Math.max(0, Math.ceil((120 - (delay / 1000)) / 1))
+    setTimeout(async () => {
+      await updateResearchStatus(researchId, companyUrl, {
+        status: progress < 45 ? 'strategic_foundation' : progress < 85 ? 'strategy_positioning' : progress < 100 ? 'execution_operations' : 'completed',
+        progress_percentage: progress,
+        current_phase: phase.toUpperCase(),
+        artifacts_completed: artifacts
       })
     }, delay)
   })
@@ -185,10 +208,10 @@ Return your analysis as structured JSON with each artifact clearly labeled and o
 
   try {
     console.log(`Starting Mistral API call for ${companyUrl}...`)
-    console.log(`Using model: mistral-large-latest`)
+    console.log(`Using model: mistral-medium-latest`)
     
     const requestBody = {
-      model: 'mistral-large-latest',
+      model: 'mistral-medium-latest',
       messages: [
         {
           role: 'system',
@@ -205,15 +228,22 @@ Return your analysis as structured JSON with each artifact clearly labeled and o
     
     console.log('Request body:', JSON.stringify(requestBody, null, 2))
 
-    // Use Mistral Chat Completions API with agent_id parameter
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${mistralApiKey}`
-      },
-      body: JSON.stringify(requestBody)
-    })
+    // Use Mistral Chat Completions API with better error handling
+    let response
+    try {
+      response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${mistralApiKey}`,
+          'User-Agent': 'SuperSwift-Interview-Agent/1.0'
+        },
+        body: JSON.stringify(requestBody)
+      })
+    } catch (fetchError) {
+      console.error('Fetch error details:', fetchError)
+      throw new Error(`Network error calling Mistral API: ${fetchError.message}`)
+    }
 
     console.log(`Mistral API response status: ${response.status}`)
     
@@ -221,12 +251,22 @@ Return your analysis as structured JSON with each artifact clearly labeled and o
       const errorText = await response.text()
       console.error(`Mistral API error ${response.status}:`, errorText)
       
-      // Update status to show error
-      updateResearchStatus(researchId, {
-        status: 'error',
-        progress: 0,
-        message: `Mistral API error: ${response.status}`,
-        error: `API Error ${response.status}: ${errorText}`
+      // Handle rate limiting - return proper error
+      if (response.status === 429) {
+        console.error('Mistral API rate limit exceeded')
+        await updateResearchStatus(researchId, companyUrl, {
+          status: 'failed',
+          progress_percentage: 0,
+          current_phase: 'ERROR'
+        })
+        return
+      }
+      
+      // Update status to show error for other errors
+      await updateResearchStatus(researchId, companyUrl, {
+        status: 'failed',
+        progress_percentage: 0,
+        current_phase: 'ERROR'
       })
       
       throw new Error(`Mistral API error: ${response.status} - ${errorText}`)
@@ -240,30 +280,58 @@ Return your analysis as structured JSON with each artifact clearly labeled and o
     }
     
     const analysisContent = result.choices[0].message.content
+    const assessmentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-    // Store the completed research data
-    const researchData = {
-      researchId,
-      companyUrl,
-      status: 'completed',
-      analysisContent,
-      completedAt: new Date().toISOString(),
-      assessmentSessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    // Create assessment session record first (required for foreign key)
+    const { error: sessionError } = await supabase
+      .from('assessment_sessions')
+      .insert({
+        session_id: assessmentSessionId,
+        company_url: companyUrl,
+        status: 'ready',
+        research_data: { analysis_content: analysisContent },
+        artifacts_completed: 23,
+        total_artifacts: 23,
+        progress_percentage: 100
+      })
+
+    if (sessionError) {
+      console.error('Failed to create assessment session:', sessionError)
+      // Still update research status without session_id using direct update
+      const { error: updateError } = await supabase
+        .from('research_data')
+        .update({
+          status: 'completed',
+          progress_percentage: 100,
+          current_phase: 'COMPLETED',
+          artifacts_completed: 23,
+          analysis_content: analysisContent,
+          completed_at: new Date().toISOString()
+        })
+        .eq('research_id', researchId)
+
+      if (updateError) {
+        console.error('Failed to update research with analysis (no session):', updateError)
+      }
+    } else {
+      // Store the completed research data in database with session_id using direct update
+      const { error: updateError } = await supabase
+        .from('research_data')
+        .update({
+          status: 'completed',
+          progress_percentage: 100,
+          current_phase: 'COMPLETED',
+          artifacts_completed: 23,
+          analysis_content: analysisContent,
+          session_id: assessmentSessionId,
+          completed_at: new Date().toISOString()
+        })
+        .eq('research_id', researchId)
+
+      if (updateError) {
+        console.error('Failed to update research with analysis:', updateError)
+      }
     }
-
-    // Update research status to completed
-    updateResearchStatus(researchId, {
-      status: 'completed',
-      progress: 100,
-      message: 'SuperSwift GTM assessment completed! 23 strategic artifacts generated.',
-      currentPhase: 'COMPLETED',
-      currentStep: 'Ready for strategic assessment interview',
-      artifactsCompleted: 23,
-      totalArtifacts: 23,
-      estimatedTimeRemaining: 0,
-      assessmentSessionId: researchData.assessmentSessionId,
-      analysisContent
-    })
 
     console.log(`GTM analysis completed for ${researchId}`)
     console.log('Analysis preview:', analysisContent.substring(0, 500) + '...')
@@ -272,3 +340,4 @@ Return your analysis as structured JSON with each artifact clearly labeled and o
     console.error('Mistral analysis error:', error)
   }
 }
+

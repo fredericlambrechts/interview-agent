@@ -33,27 +33,46 @@ export default function ResearchProgress({ researchId }: ResearchProgressProps) 
 
   useEffect(() => {
     let interval: NodeJS.Timeout
+    let isMounted = true
 
     const fetchStatus = async () => {
       try {
+        // Only fetch if component is still mounted
+        if (!isMounted) return
+
         const response = await fetch(`/api/research/status/${researchId}`)
         const data = await response.json()
+
+        // Only update state if component is still mounted
+        if (!isMounted) return
 
         if (data.success) {
           setStatus(data)
           
           // If research is completed, redirect to interview landing
           if (data.status === 'completed' && data.assessmentSessionId) {
+            // Clear interval before redirecting
+            if (interval) {
+              clearInterval(interval)
+              interval = undefined as any
+            }
+            
             setTimeout(() => {
-              router.push(`/interview/landing/${data.assessmentSessionId}`)
+              // Double-check component is still mounted before navigating
+              if (isMounted) {
+                router.push(`/interview/${data.assessmentSessionId}`)
+              }
             }, 2000)
           }
         } else {
           setError(data.error || 'Failed to fetch research status')
         }
       } catch (err) {
-        setError('Network error while checking research status')
-        console.error('Status fetch error:', err)
+        // Only set error if component is still mounted
+        if (isMounted) {
+          setError('Network error while checking research status')
+          console.error('Status fetch error:', err)
+        }
       }
     }
 
@@ -62,13 +81,18 @@ export default function ResearchProgress({ researchId }: ResearchProgressProps) 
 
     // Poll every 3 seconds if not completed
     if (!status || status.status !== 'completed') {
-      interval = setInterval(fetchStatus, 3000)
+      interval = setInterval(() => {
+        if (isMounted) {
+          fetchStatus()
+        }
+      }, 3000)
     }
 
     return () => {
+      isMounted = false
       if (interval) clearInterval(interval)
     }
-  }, [researchId, router, status])
+  }, [researchId, router])
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -111,8 +135,8 @@ export default function ResearchProgress({ researchId }: ResearchProgressProps) 
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="h-16 w-16 bg-gradient-to-br from-superswift-orange to-superswift-orange-light rounded-2xl flex items-center justify-center shadow-lg">
-              <Globe className="h-8 w-8 text-white" />
+            <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-gray-200">
+              <img src="/logos/superswift-logo-black.svg" alt="SuperSwift" className="h-10 w-10" />
             </div>
             <div>
               <h1 className="text-4xl font-bold text-superswift-black">Research in Progress</h1>
@@ -196,7 +220,11 @@ export default function ResearchProgress({ researchId }: ResearchProgressProps) 
                   ✅ Research completed successfully!
                 </div>
                 <Button
-                  onClick={() => router.push(`/interview/landing/${status.assessmentSessionId}`)}
+                  onClick={() => {
+                    if (status?.assessmentSessionId) {
+                      router.push(`/interview/${status.assessmentSessionId}`)
+                    }
+                  }}
                   className="w-full bg-gradient-to-r from-superswift-orange to-superswift-orange-light hover:shadow-lg transition-all text-white min-h-[48px] text-lg font-medium"
                 >
                   Start Strategic Assessment
@@ -215,9 +243,9 @@ export default function ResearchProgress({ researchId }: ResearchProgressProps) 
                   <div className={`h-10 w-10 rounded-full flex items-center justify-center mx-auto ${
                     getPhaseStyle('strategic_foundation', status?.status).includes('scale-105') 
                       ? 'bg-superswift-orange text-white' 
-                      : 'bg-superswift-orange-bg'
+                      : 'bg-superswift-orange-bg text-superswift-orange'
                   }`}>
-                    <span className="text-sm font-bold text-superswift-orange">1</span>
+                    <span className="text-sm font-bold">1</span>
                   </div>
                   <div className="text-sm">
                     <div className="font-medium text-superswift-black">Strategic Foundation</div>
@@ -229,9 +257,9 @@ export default function ResearchProgress({ researchId }: ResearchProgressProps) 
                   <div className={`h-10 w-10 rounded-full flex items-center justify-center mx-auto ${
                     getPhaseStyle('strategy_positioning', status?.status).includes('scale-105') 
                       ? 'bg-superswift-orange text-white' 
-                      : 'bg-superswift-gray-border'
+                      : 'bg-white border-2 border-superswift-gray-border text-superswift-black'
                   }`}>
-                    <span className="text-sm font-bold text-superswift-gray-text">2</span>
+                    <span className="text-sm font-bold">2</span>
                   </div>
                   <div className="text-sm">
                     <div className="font-medium text-superswift-black">Strategy & Positioning</div>
@@ -243,9 +271,9 @@ export default function ResearchProgress({ researchId }: ResearchProgressProps) 
                   <div className={`h-10 w-10 rounded-full flex items-center justify-center mx-auto ${
                     getPhaseStyle('execution_operations', status?.status).includes('scale-105') 
                       ? 'bg-superswift-orange text-white' 
-                      : 'bg-superswift-gray-border'
+                      : 'bg-white border-2 border-superswift-gray-border text-superswift-black'
                   }`}>
-                    <span className="text-sm font-bold text-superswift-gray-text">3</span>
+                    <span className="text-sm font-bold">3</span>
                   </div>
                   <div className="text-sm">
                     <div className="font-medium text-superswift-black">Execution & Operations</div>

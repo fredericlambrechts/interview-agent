@@ -1,16 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
-// Access the same in-memory storage from submit route
-declare global {
-  var researchStatusMap: Map<string, any>
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+async function getResearchStatus(researchId: string) {
+  const { data, error } = await supabase
+    .from('research_data')
+    .select('*')
+    .eq('research_id', researchId)
+    .single()
+  
+  if (error && error.code !== 'PGRST116') {
+    console.error('Database fetch error:', error)
+    return null
+  }
+  
+  return data
 }
 
-if (!global.researchStatusMap) {
-  global.researchStatusMap = new Map()
-}
-
-function getResearchStatus(researchId: string) {
-  return global.researchStatusMap.get(researchId)
+function getStatusMessage(status: string): string {
+  switch (status) {
+    case 'strategic_foundation':
+      return 'Analyzing strategic foundation and business model...'
+    case 'strategy_positioning':
+      return 'Developing strategy and positioning framework...'
+    case 'execution_operations':
+      return 'Creating execution and operations plan...'
+    case 'completed':
+      return 'SuperSwift GTM assessment completed! 23 strategic artifacts generated.'
+    case 'failed':
+      return 'API rate limit exceeded. Please wait a few minutes and try again.'
+    default:
+      return 'Processing research request...'
+  }
 }
 
 export async function GET(
@@ -21,18 +46,30 @@ export async function GET(
     const { id } = await params
     const researchId = id
 
-    // Get real research status from in-memory storage
-    const realStatus = getResearchStatus(researchId)
+    // Get research status from database
+    const researchData = await getResearchStatus(researchId)
     
-    if (realStatus) {
+    if (researchData) {
       return NextResponse.json({
         success: true,
         researchId,
-        ...realStatus
+        status: researchData.status,
+        progress: researchData.progress_percentage || 0,
+        message: getStatusMessage(researchData.status, researchData.current_phase),
+        currentPhase: researchData.current_phase,
+        currentStep: researchData.current_phase,
+        artifactsCompleted: researchData.artifacts_completed || 0,
+        totalArtifacts: 23,
+        estimatedTimeRemaining: 0,
+        assessmentSessionId: researchData.session_id,
+        companyUrl: researchData.company_url,
+        analysisContent: researchData.analysis_content,
+        completedAt: researchData.completed_at,
+        error: researchData.error_message
       })
     }
 
-    // If no real status found, return not found
+    // If no research found, return not found
     return NextResponse.json(
       { success: false, error: "Research session not found" },
       { status: 404 }
@@ -48,80 +85,3 @@ export async function GET(
   }
 }
 
-// Simulate sophisticated consulting research progress
-function getSimulatedStatus(researchId: string) {
-  const startTime = parseInt(researchId.split('_')[1])
-  const elapsed = Date.now() - startTime
-  const totalDuration = 300000 // 5 minutes for comprehensive analysis
-  
-  if (elapsed < 60000) {
-    // PART 1: STRATEGIC FOUNDATION - Steps 1-2 (Artifacts 1-8)
-    const currentArtifact = Math.min(8, Math.ceil((elapsed / 60000) * 8))
-    return {
-      status: 'strategic_foundation',
-      progress: Math.min(35, (elapsed / 60000) * 35),
-      message: `Analyzing strategic foundation (Artifact ${currentArtifact}/8): Core identity, business model, and market intelligence...`,
-      currentPhase: 'STRATEGIC FOUNDATION',
-      currentStep: elapsed < 30000 ? 'Step 1: Core Identity & Business Model' : 'Step 2: Customer & Market Intelligence',
-      artifactsCompleted: currentArtifact - 1,
-      totalArtifacts: 23,
-      estimatedTimeRemaining: Math.max(0, Math.ceil((totalDuration - elapsed) / 1000))
-    }
-  } else if (elapsed < 180000) {
-    // PART 2: STRATEGY & POSITIONING - Steps 3-6 (Artifacts 9-17)
-    const currentArtifact = Math.min(17, 8 + Math.ceil(((elapsed - 60000) / 120000) * 9))
-    const step = elapsed < 90000 ? 'Step 3: Competitive Landscape' :
-                 elapsed < 120000 ? 'Step 4: Channel & Go-to-Market' :
-                 elapsed < 150000 ? 'Step 5: Partnership & Alliance Strategy' :
-                 'Step 6: Brand & Messaging'
-    return {
-      status: 'strategy_positioning',
-      progress: Math.min(75, 35 + ((elapsed - 60000) / 120000) * 40),
-      message: `Developing strategy & positioning (Artifact ${currentArtifact}/23): ${step.split(': ')[1]}...`,
-      currentPhase: 'STRATEGY & POSITIONING',
-      currentStep: step,
-      artifactsCompleted: currentArtifact - 1,
-      totalArtifacts: 23,
-      estimatedTimeRemaining: Math.max(0, Math.ceil((totalDuration - elapsed) / 1000))
-    }
-  } else if (elapsed < 280000) {
-    // PART 3: EXECUTION & OPERATIONS - Steps 7-9 (Artifacts 18-23)
-    const currentArtifact = Math.min(23, 17 + Math.ceil(((elapsed - 180000) / 100000) * 6))
-    const step = elapsed < 220000 ? 'Step 7: GTM Operations & Execution Plan' :
-                 elapsed < 250000 ? 'Step 8: Performance Measurement & KPIs' :
-                 'Step 9: Risk & Mitigation'
-    return {
-      status: 'execution_operations',
-      progress: Math.min(95, 75 + ((elapsed - 180000) / 100000) * 20),
-      message: `Finalizing execution & operations (Artifact ${currentArtifact}/23): ${step.split(': ')[1]}...`,
-      currentPhase: 'EXECUTION & OPERATIONS',
-      currentStep: step,
-      artifactsCompleted: currentArtifact - 1,
-      totalArtifacts: 23,
-      estimatedTimeRemaining: Math.max(0, Math.ceil((totalDuration - elapsed) / 1000))
-    }
-  } else if (elapsed < 300000) {
-    return {
-      status: 'finalizing_report',
-      progress: Math.min(99, 95 + ((elapsed - 280000) / 20000) * 4),
-      message: 'Finalizing comprehensive GTM assessment report...',
-      currentPhase: 'FINALIZING',
-      currentStep: 'Compiling 23 strategic artifacts',
-      artifactsCompleted: 23,
-      totalArtifacts: 23,
-      estimatedTimeRemaining: Math.max(0, Math.ceil((totalDuration - elapsed) / 1000))
-    }
-  } else {
-    return {
-      status: 'completed',
-      progress: 100,
-      message: 'SuperSwift GTM assessment completed! 23 strategic artifacts generated.',
-      currentPhase: 'COMPLETED',
-      currentStep: 'Ready for strategic assessment interview',
-      artifactsCompleted: 23,
-      totalArtifacts: 23,
-      estimatedTimeRemaining: 0,
-      assessmentSessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    }
-  }
-}

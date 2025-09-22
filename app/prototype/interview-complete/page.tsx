@@ -1,17 +1,9 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
-  Users,
-  Target,
-  DollarSign,
-  TrendingUp,
-  MessageCircle,
-  ChevronRight,
-  ChevronDown,
   CheckCircle,
   Download,
   Calendar,
@@ -19,15 +11,6 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import Script from "next/script"
-import {
-  Breadcrumb,
-  BreadcrumbEllipsis,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
 
 export default function InterviewCompletePage() {
   const [widgetLoaded, setWidgetLoaded] = useState(false)
