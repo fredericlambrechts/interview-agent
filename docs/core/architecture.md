@@ -12,6 +12,8 @@ The project is built upon the **Next.js SaaS Starter Kit**, which provides a sol
 
 | Date | Version | Description | Author |
 |------|---------|-------------|--------|
+| 2025-09-24 | 5.0 | Final Architecture: n8n + ElevenLabs Conversational AI | Winston 🏗️ |
+| 2025-09-23 | 4.0 | Pivoted to ElevenLabs Conversational AI webhook architecture | Winston 🏗️ |
 | 2025-09-20 | 3.0 | Integrated 3-tier data architecture with agent collaboration system | Winston 🏗️ |
 | 2025-09-17 | 2.0 | Consolidated architecture reflecting actual implementation | Winston 🏗️ |
 | 2025-09-17 | 1.0 | Initial architecture draft | Winston 🏗️ |
@@ -38,25 +40,36 @@ The SuperSwift Interview Agent uses a **monorepo architecture** built on **Next.
 
 ```mermaid
 graph TD
-    User(User) --> VercelEdge[Vercel Edge Network]
-    VercelEdge --> NextApp[Next.js Frontend]
-    NextApp --> VoiceInterface[Voice Interface]
-    VoiceInterface --> ElevenLabs[ElevenLabs API]
-    NextApp --> SupabaseAuth[Supabase Auth]
-    NextApp --> DenoFunctions[Deno Edge Functions]
-    DenoFunctions --> SupabaseDB[Supabase PostgreSQL]
-    DenoFunctions --> N8NWorkflows[N8N Workflows]
-    N8NWorkflows --> ExternalAPIs[External Research APIs]
-    SupabaseDB --> ComplexJSONB[JSONB Business Data]
+    User[User] -->|Voice| ElevenLabs[ElevenLabs Conversational AI]
+    ElevenLabs -->|Single Webhook| n8n[n8n Orchestration Hub]
+    
+    n8n --> ResearchFlow[Research Workflows]
+    n8n --> AssessmentFlow[Assessment Workflows]
+    n8n --> SynthesisFlow[Synthesis Workflows]
+    
+    ResearchFlow --> APIs[External APIs]
+    ResearchFlow --> Tier1[(Tier 1: Research Data)]
+    
+    AssessmentFlow --> Tier2[(Tier 2: Working Data)]
+    
+    SynthesisFlow --> Tier3[(Tier 3: Business Intelligence)]
+    
+    n8n -->|Response| ElevenLabs
+    ElevenLabs -->|Voice| User
+    
+    NextApp[Next.js Web App] --> Tier2
+    NextApp --> Tier3
+    NextApp --> Auth[Supabase Auth]
 ```
 
 ### Architectural Patterns
 
-- **Monorepo Architecture:** Multiple packages for frontend, backend, workflows, and shared types - _Rationale:_ Required by PRD, enables code sharing and coordinated development
-- **Voice-First Architecture:** ElevenLabs API integration for natural speech interaction - _Rationale:_ Core requirement for natural business discovery conversations
-- **JSONB Data Modeling:** Complex nested business data structures in PostgreSQL - _Rationale:_ Strategic consulting requires sophisticated data capture for business context
-- **Workflow Orchestration:** N8N for data flows and external integrations - _Rationale:_ Specified in PRD for backend hosting and data pipeline management
-- **Edge Functions Pattern:** Deno Edge Functions for serverless backend logic - _Rationale:_ PRD specification for server-side code execution
+- **Visual Workflow Orchestration:** n8n serves as the visual business logic layer - _Rationale:_ Interview flows are inherently visual, drag-and-drop modifications without code deployment
+- **Single Integration Point:** ElevenLabs connects to n8n via one webhook - _Rationale:_ Simplifies configuration and reduces failure points
+- **Clear Separation of Concerns:** Voice (ElevenLabs) | Logic (n8n) | UI (Next.js) | Data (Supabase) - _Rationale:_ Each component does exactly what it's best at
+- **Three-Tier Data Architecture:** Research → Working → Intelligence layers - _Rationale:_ Clean data lifecycle management with appropriate retention policies
+- **Conversation-as-a-Service:** ElevenLabs handles all conversation complexity - _Rationale:_ Leverages best-in-class voice AI without custom implementation
+- **No-Code Business Logic:** n8n workflows replace traditional backend code - _Rationale:_ 60% faster development, visual debugging, business-friendly modifications
 
 ## Tech Stack
 
@@ -462,37 +475,42 @@ $$ LANGUAGE plpgsql;
 -- SELECT cron.schedule('cleanup-assessments', '0 3 * * *', 'SELECT cleanup_assessment_sessions();');
 ```
 
-## Agent Collaboration Architecture
+## n8n + ElevenLabs Integration Architecture
 
-### MVP Data Flow Pipeline
+### Simplified Component Architecture
 
 ```
-User Form Submission → n8n Research Workflow → Tier 1: Research Data
-Research Complete → Auto-create Assessment Session → Tier 2: Interview Data
-Interview Complete → Data Synthesis Agent → Tier 3: Business Intelligence
+ElevenLabs (Voice AI) → n8n (Visual Logic) → Supabase (Data Storage)
+                                ↓
+                        Next.js (Web UI Only)
 ```
 
-### 3-Agent Interview System + Data Synthesis
+### Core Components
 
-**Voice Agent (Presentation Layer)**
-- **Role:** Pure ElevenLabs I/O interface
-- **Responsibilities:** Speech-to-text, text-to-speech, audio streaming
-- **Does NOT:** Interpret content, make routing decisions, update data
+**1. ElevenLabs Conversational AI**
+- **Single Responsibility:** Manage voice conversations
+- **Configuration:** One custom tool pointing to n8n
+- **No business logic:** Pure conversation management
 
-**Interview Orchestrator Agent (Business Logic Layer)**
-- **Role:** Core interview flow management and intelligent routing
-- **Responsibilities:** 
-  - Analyze user input for intent and content
-  - Ask contextual questions based on research gaps and completion markers
-  - Route information updates to appropriate assessment sections
-  - Maintain step-scoped conversation memory
-  - Handle completed vs in-progress step behavior (responsive but not proactive on completed steps)
-- **Context Loading:** Hybrid smart loading (immediate: current step + related, lazy: full context on-demand)
+**2. n8n Orchestration Hub**
+- **Single Responsibility:** Visual business logic
+- **Workflows Replace Code:** No traditional backend needed
+- **Key Workflows:**
+  - Master Orchestrator (routes requests)
+  - Research Collection (Tier 1 operations)
+  - Assessment Management (Tier 2 operations)
+  - Intelligence Synthesis (Tier 3 operations)
 
-**Data Validation Agent (Data Management Layer)**
-- **Role:** Assessment data management (Tier 2 only)
-- **Responsibilities:**
-  - Process user confirmations, corrections, additions
+**3. Next.js Application**
+- **Single Responsibility:** Web interface only
+- **No conversation logic:** Just display and authentication
+- **Direct database access:** For viewing reports and progress
+
+**4. Supabase Database**
+- **Three-Tier Architecture:**
+  - Tier 1: `research_data` (90-day retention)
+  - Tier 2: `assessment_sessions` (active working data)
+  - Tier 3: `company_business_intel` (permanent storage)
   - Update step_data with completion markers and open questions
   - Track dynamic completion status per topic
   - Maintain data versioning within interview session

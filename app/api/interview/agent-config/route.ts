@@ -13,24 +13,31 @@ const agentConfigSchema = z.object({
     name: z.string(),
     role: z.string(),
     linkedinUrl: z.string().optional()
-  })
+  }),
+  currentContext: z.object({
+    artifact: z.string(),
+    artifactName: z.string(),
+    step: z.string(),
+    stepName: z.string(),
+    description: z.string()
+  }).optional()
 })
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { sessionId, researchData, userInfo } = agentConfigSchema.parse(body)
+    const { sessionId, researchData, userInfo, currentContext } = agentConfigSchema.parse(body)
 
     // Generate SuperSwift consulting persona and context
     const agentPersona = generateSuperSwiftPersona(researchData, userInfo)
-    const conversationContext = generateConversationContext(researchData, userInfo)
+    const conversationContext = generateConversationContext(researchData, userInfo, currentContext)
 
     // Store agent configuration (in production, this would be sent to ElevenLabs ConvAI)
     const agentConfig = {
       sessionId,
       persona: agentPersona,
       context: conversationContext,
-      instructions: generateInterviewInstructions(),
+      instructions: generateInterviewInstructions(currentContext),
       createdAt: new Date().toISOString()
     }
 
@@ -109,12 +116,19 @@ You are conducting a strategic assessment interview with ${userInfo.name}, who i
 Your goal is to complete a comprehensive 23-artifact SuperSwift GTM assessment through natural conversation, building on the research analysis already completed.`
 }
 
-function generateConversationContext(researchData: ResearchData, userInfo: UserInfo): string {
+function generateConversationContext(researchData: ResearchData, userInfo: UserInfo, currentContext?: any): string {
+  const contextSection = currentContext ? `
+CURRENT INTERVIEW CONTEXT:
+- Current Step: ${currentContext.stepName || 'Strategic Foundation'}
+- Current Artifact: ${currentContext.artifactName || 'Mission & Vision'}
+- Focus Area: ${currentContext.description || 'Core identity and business model'}` : ''
+
   return `INTERVIEW CONTEXT:
 
 PARTICIPANT: ${userInfo.name}, ${userInfo.role}
 COMPANY: ${researchData.companyUrl}
 RESEARCH STATUS: ${researchData.artifactsCompleted}/${researchData.totalArtifacts} artifacts completed
+${contextSection}
 
 BACKGROUND RESEARCH COMPLETED:
 Our SuperSwift research team has completed comprehensive analysis of ${researchData.companyUrl}, generating ${researchData.artifactsCompleted} strategic artifacts covering:
@@ -143,14 +157,19 @@ CONVERSATION STYLE:
 - Demonstrate deep medtech expertise through thoughtful follow-up questions`
 }
 
-function generateInterviewInstructions(): string {
+function generateInterviewInstructions(currentContext?: any): string {
+  const artifactQuestions = generateSpecificArtifactQuestions(currentContext)
+  
   return `INTERVIEW INSTRUCTIONS:
 
+CRITICAL: You are NOT a general assistant. You are conducting a STRUCTURED STRATEGIC ASSESSMENT INTERVIEW.
+
 OPENING APPROACH:
-1. Start with warm greeting and brief introduction of yourself and SuperSwift
-2. Acknowledge the completed research and set context for the interview
-3. Explain the 30-45 minute structured conversation format
-4. Ask if they have any questions before beginning
+1. IMMEDIATELY start with: "Hi, I'm from SuperSwift. I've reviewed the comprehensive research on your company. Let's begin our strategic assessment."
+2. Then ask the FIRST ARTIFACT QUESTION based on the current step and artifact:
+${artifactQuestions}
+3. Do NOT give generic greetings like "How can I help you?" 
+4. Do NOT wait for the user to ask questions - YOU lead the interview
 
 CONVERSATION MANAGEMENT:
 - Keep responses concise but insightful (30-60 seconds typically)
@@ -181,6 +200,25 @@ RESPONSE GUIDELINES:
 - Keep the conversation engaging and collaborative
 
 Remember: This is a strategic partnership conversation, not an interrogation. Create space for insights to emerge naturally while ensuring comprehensive coverage of the SuperSwift GTM framework.`
+}
+
+function generateSpecificArtifactQuestions(currentContext?: any): string {
+  if (!currentContext?.artifact) {
+    return "Start with the Mission & Vision artifact: 'Let's begin by discussing your company's mission. Can you tell me about what drives your organization and the patient outcomes you're targeting?'"
+  }
+
+  const artifactQuestions: Record<string, string> = {
+    'artifact_1': "Start with the Mission & Vision: 'Let's begin by discussing your company's mission. Can you tell me about what drives your organization and the patient outcomes you're targeting?'",
+    'artifact_2': "Focus on Core Offering: 'Tell me about your core product or solution. What specific problem does it solve for healthcare providers?'",
+    'artifact_3': "Address Regulatory Pathway: 'Let's discuss your regulatory strategy. What pathway are you pursuing with the FDA, and where are you in the process?'",
+    'artifact_4': "Explore Revenue Model: 'Walk me through your revenue model. How do you monetize your solution, and what's your pricing strategy?'",
+    'artifact_5': "Discuss Market Sizing: 'Let's talk about your market opportunity. How do you size the TAM, SAM, and SOM for your solution?'",
+    'artifact_6': "Cover Clinical Evidence: 'Tell me about your clinical validation strategy. What studies have you conducted, and who are your key opinion leaders?'",
+    'artifact_7': "Identify Customer Profile: 'Who is your ideal customer? Walk me through your primary buyer personas and decision makers.'",
+    'artifact_8': "Analyze Value Proposition: 'What are the key pains you address and gains you deliver? How do you quantify the value for customers?'"
+  }
+
+  return artifactQuestions[currentContext.artifact] || "Continue with the strategic assessment based on the current focus area."
 }
 
 export async function GET() {

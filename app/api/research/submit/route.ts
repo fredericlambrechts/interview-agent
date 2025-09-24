@@ -9,7 +9,16 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-async function updateResearchStatus(researchId: string, companyUrl: string, status: any) {
+interface ResearchStatus {
+  status: string
+  progress_percentage?: number
+  analysis_content?: string
+  completed_at?: string
+  artifacts_completed?: number
+  total_artifacts?: number
+}
+
+async function updateResearchStatus(researchId: string, companyUrl: string, status: ResearchStatus) {
   const { error } = await supabase
     .from('research_data')
     .upsert({
@@ -26,20 +35,21 @@ async function updateResearchStatus(researchId: string, companyUrl: string, stat
   }
 }
 
-async function getResearchStatus(researchId: string) {
-  const { data, error } = await supabase
-    .from('research_data')
-    .select('*')
-    .eq('research_id', researchId)
-    .single()
+// Note: getResearchStatus function reserved for future use
+// async function getResearchStatus(researchId: string) {
+//   const { data, error } = await supabase
+//     .from('research_data')
+//     .select('*')
+//     .eq('research_id', researchId)
+//     .single()
   
-  if (error && error.code !== 'PGRST116') {
-    console.error('Database fetch error:', error)
-    throw new Error('Failed to get research status')
-  }
+//   if (error && error.code !== 'PGRST116') {
+//     console.error('Database fetch error:', error)
+//     throw new Error('Failed to get research status')
+//   }
   
-  return data
-}
+//   return data
+// }
 
 const submitSchema = z.object({
   companyUrl: z.string().url("Invalid URL format")
@@ -72,8 +82,8 @@ export async function POST(request: NextRequest) {
       throw new Error('Failed to create research record')
     }
 
-    // Trigger Mistral research analysis in background
-    triggerMistralResearch(researchId, companyUrl)
+    // Trigger OpenRouter research analysis in background
+    triggerOpenRouterResearch(researchId, companyUrl)
 
     // Return research session ID for status tracking
     return NextResponse.json({
@@ -100,22 +110,22 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function triggerMistralResearch(researchId: string, companyUrl: string) {
-  // Run Mistral analysis in background
+async function triggerOpenRouterResearch(researchId: string, companyUrl: string) {
+  // Run OpenRouter analysis in background
   setTimeout(async () => {
     try {
-      await performMistralAnalysis(researchId, companyUrl)
+      await performOpenRouterAnalysis(researchId, companyUrl)
     } catch (error) {
-      console.error('Mistral analysis failed:', error)
+      console.error('OpenRouter analysis failed:', error)
     }
   }, 1000)
 }
 
-async function performMistralAnalysis(researchId: string, companyUrl: string) {
-  const mistralApiKey = process.env.MISTRAL_API_KEY
+async function performOpenRouterAnalysis(researchId: string, companyUrl: string) {
+  const openRouterApiKey = process.env.OPENROUTER_API_KEY
   
-  if (!mistralApiKey) {
-    console.error('MISTRAL_API_KEY not configured')
+  if (!openRouterApiKey) {
+    console.error('OPENROUTER_API_KEY not configured')
     updateResearchStatus(researchId, companyUrl, {
       status: 'failed',
       progress_percentage: 0,
@@ -133,7 +143,7 @@ async function performMistralAnalysis(researchId: string, companyUrl: string) {
     { delay: 100000, progress: 100, phase: 'Execution & Operations', step: 'Finalizing assessment', artifacts: 23 }
   ]
 
-  progressUpdates.forEach(({ delay, progress, phase, step, artifacts }) => {
+  progressUpdates.forEach(({ delay, progress, phase, artifacts }) => {
     setTimeout(async () => {
       await updateResearchStatus(researchId, companyUrl, {
         status: progress < 45 ? 'strategic_foundation' : progress < 85 ? 'strategy_positioning' : progress < 100 ? 'execution_operations' : 'completed',
@@ -207,76 +217,48 @@ Do not mention BCG. Use SuperSwift.
 Return your analysis as structured JSON with each artifact clearly labeled and organized by the 3 main parts.`
 
   try {
-    console.log(`Starting Mistral API call for ${companyUrl}...`)
-    console.log(`Using model: mistral-medium-latest`)
+    console.log(`Starting OpenRouter API call for ${companyUrl}...`)
+    console.log(`Using model: anthropic/claude-3.5-sonnet`)
     
-    const requestBody = {
-      model: 'mistral-medium-latest',
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt
-        },
-        {
-          role: 'user',
-          content: `Analyze this company: ${companyUrl}`
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 8000
-    }
-    
-    console.log('Request body:', JSON.stringify(requestBody, null, 2))
-
-    // Use Mistral Chat Completions API with better error handling
-    let response
-    try {
-      response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${mistralApiKey}`,
-          'User-Agent': 'SuperSwift-Interview-Agent/1.0'
-        },
-        body: JSON.stringify(requestBody)
+    // Use OpenRouter with Claude 3.5 Sonnet
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openRouterApiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'http://localhost:3001',
+        'X-Title': 'SuperSwift Interview Agent'
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3.5-sonnet',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: `Analyze this company: ${companyUrl}`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 8000
       })
-    } catch (fetchError) {
-      console.error('Fetch error details:', fetchError)
-      throw new Error(`Network error calling Mistral API: ${fetchError.message}`)
-    }
+    })
 
-    console.log(`Mistral API response status: ${response.status}`)
+    console.log(`OpenRouter API response status: ${response.status}`)
     
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`Mistral API error ${response.status}:`, errorText)
-      
-      // Handle rate limiting - return proper error
-      if (response.status === 429) {
-        console.error('Mistral API rate limit exceeded')
-        await updateResearchStatus(researchId, companyUrl, {
-          status: 'failed',
-          progress_percentage: 0,
-          current_phase: 'ERROR'
-        })
-        return
-      }
-      
-      // Update status to show error for other errors
-      await updateResearchStatus(researchId, companyUrl, {
-        status: 'failed',
-        progress_percentage: 0,
-        current_phase: 'ERROR'
-      })
-      
-      throw new Error(`Mistral API error: ${response.status} - ${errorText}`)
+      console.error(`OpenRouter API error ${response.status}:`, errorText)
+      throw new Error(`OpenRouter API error: ${response.status} - ${errorText}`)
     }
 
     const result = await response.json()
-    console.log('Mistral API response received successfully')
+    console.log('OpenRouter API response received successfully')
     
     if (!result.choices || !result.choices[0] || !result.choices[0].message) {
-      throw new Error('Invalid response format from Mistral API')
+      throw new Error('Invalid response format from OpenRouter API')
     }
     
     const analysisContent = result.choices[0].message.content
@@ -337,7 +319,15 @@ Return your analysis as structured JSON with each artifact clearly labeled and o
     console.log('Analysis preview:', analysisContent.substring(0, 500) + '...')
     
   } catch (error) {
-    console.error('Mistral analysis error:', error)
+    console.error('OpenRouter analysis error:', error)
+    
+    // Update research status to failed on error
+    await updateResearchStatus(researchId, companyUrl, {
+      status: 'failed',
+      progress_percentage: 0,
+      current_phase: 'ERROR',
+      message: `OpenRouter API error: ${error.message}`
+    })
   }
 }
 

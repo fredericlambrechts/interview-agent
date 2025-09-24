@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import Script from "next/script"
+// Removed broken InterviewVoiceInterface - using ElevenLabs ConvAI widget instead
 
 interface ResearchData {
   companyUrl: string
@@ -38,6 +39,9 @@ export default function InterviewConduct({ sessionId }: InterviewConductProps) {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [widgetLoaded, setWidgetLoaded] = useState(false)
+  const [browserSupported, setBrowserSupported] = useState(true)
+  const [connectionError, setConnectionError] = useState<string | null>(null)
+  const [connectionTimeout, setConnectionTimeout] = useState(false)
   const [currentArtifact, setCurrentArtifact] = useState<string>('artifact_1')
   const [interviewProgress, setInterviewProgress] = useState<any>(null)
   const [dynamicQuestions, setDynamicQuestions] = useState<any[]>([])
@@ -74,6 +78,32 @@ export default function InterviewConduct({ sessionId }: InterviewConductProps) {
   })
 
   useEffect(() => {
+    // Check browser compatibility
+    const checkBrowserSupport = () => {
+      const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
+      const isSecureContext = window.isSecureContext || location.protocol === 'https:'
+      
+      if (isChrome && !isSecureContext) {
+        setBrowserSupported(false)
+        setConnectionError('Chrome requires HTTPS for microphone access.')
+        return false
+      }
+      
+      // Check for WebRTC support
+      if (!window.RTCPeerConnection && !window.webkitRTCPeerConnection) {
+        setBrowserSupported(false)
+        setConnectionError('Your browser does not support WebRTC.')
+        return false
+      }
+      
+      return true
+    }
+    
+    if (!checkBrowserSupport()) {
+      setLoading(false)
+      return
+    }
+
     // Load research data and user info
     const loadSessionData = async () => {
       try {
@@ -117,6 +147,27 @@ export default function InterviewConduct({ sessionId }: InterviewConductProps) {
 
     loadSessionData()
   }, [sessionId])
+
+  // Chrome-specific timeout for ElevenLabs widget issues
+  useEffect(() => {
+    if (widgetLoaded && browserSupported) {
+      // Check if we're in Chrome
+      const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
+      
+      if (isChrome) {
+        console.log('Chrome detected - setting up connection fallback timeout...')
+        
+        // For Chrome, show fallback after reasonable timeout since it commonly fails
+        const timeout = setTimeout(() => {
+          console.warn('Chrome ElevenLabs connection timeout')
+          setConnectionTimeout(true)
+          setConnectionError('Connection timeout detected.')
+        }, 8000) // 8 second timeout for Chrome
+
+        return () => clearTimeout(timeout)
+      }
+    }
+  }, [widgetLoaded, browserSupported])
 
   // Auto-save every 2 minutes
   useEffect(() => {
@@ -167,7 +218,14 @@ export default function InterviewConduct({ sessionId }: InterviewConductProps) {
         body: JSON.stringify({
           sessionId,
           researchData: researchInfo,
-          userInfo
+          userInfo,
+          currentContext: {
+            artifact: currentArtifact,
+            artifactName: getCurrentArtifactName(),
+            step: getStepFromArtifact(currentArtifact),
+            stepName: getCurrentStepName(),
+            description: getCurrentStepDescription()
+          }
         })
       })
 
@@ -183,6 +241,54 @@ export default function InterviewConduct({ sessionId }: InterviewConductProps) {
     } catch (error) {
       console.error('Agent configuration error:', error)
     }
+  }
+
+  const getCurrentArtifactName = () => {
+    const artifactMap: Record<string, string> = {
+      'artifact_1': 'Company Mission & Vision',
+      'artifact_2': 'Core Offering Definition', 
+      'artifact_3': 'Regulatory Pathway & Classification',
+      'artifact_4': 'Revenue Streams & Pricing Model',
+      'artifact_5': 'Market Sizing (TAM, SAM, SOM)',
+      'artifact_6': 'Clinical Evidence & KOL Strategy',
+      'artifact_7': 'Ideal Customer Profile',
+      'artifact_8': 'Customer Pains & Gains',
+    }
+    return artifactMap[currentArtifact] || 'Strategic Assessment'
+  }
+
+  const getStepFromArtifact = (artifact: string) => {
+    if (['artifact_1', 'artifact_2', 'artifact_3', 'artifact_4'].includes(artifact)) {
+      return 'step_1_core_identity'
+    } else if (['artifact_5', 'artifact_6', 'artifact_7', 'artifact_8'].includes(artifact)) {
+      return 'step_2_customer_market'
+    }
+    return 'step_1_core_identity'
+  }
+
+  const getCurrentStepDescription = () => {
+    const step = getStepFromArtifact(currentArtifact)
+    if (step === 'step_1_core_identity') {
+      return "Let's discuss your company's core identity and business model."
+    } else if (step === 'step_2_customer_market') {
+      return "Let's explore your market opportunity and customer intelligence."
+    }
+    return "Let's begin your strategic assessment."
+  }
+
+  const getFirstArtifactQuestion = () => {
+    const artifactQuestions: Record<string, string> = {
+      'artifact_1': "Can you tell me about what drives your organization and the patient outcomes you're targeting?",
+      'artifact_2': "What specific problem does your core solution solve for healthcare providers?",
+      'artifact_3': "What regulatory pathway are you pursuing with the FDA, and where are you in the process?",
+      'artifact_4': "How do you monetize your solution, and what's your pricing strategy?",
+      'artifact_5': "How do you size the TAM, SAM, and SOM for your solution?",
+      'artifact_6': "What clinical studies have you conducted, and who are your key opinion leaders?",
+      'artifact_7': "Who is your ideal customer, and who are the key decision makers you need to influence?",
+      'artifact_8': "What are the key pains you address and gains you deliver for customers?"
+    }
+    
+    return artifactQuestions[currentArtifact] || "Let's discuss the strategic assessment for this area."
   }
 
   const logConversation = async (type: 'user' | 'agent' | 'system', content: string, metadata?: any) => {
@@ -723,6 +829,632 @@ export default function InterviewConduct({ sessionId }: InterviewConductProps) {
     return 'Part 3: Execution & Operations'
   }
 
+  const handleStepClick = (stepId: string) => {
+    // Update current artifact based on step
+    const stepToFirstArtifact: Record<string, string> = {
+      'identity': 'artifact_1',
+      'market': 'artifact_5',
+      'competitive': 'artifact_9',
+      'gtm': 'artifact_11',
+      'partnerships': 'artifact_14',
+      'messaging': 'artifact_16',
+      'operations': 'artifact_18',
+      'measurement': 'artifact_21',
+      'risk': 'artifact_23'
+    }
+    
+    const newArtifact = stepToFirstArtifact[stepId]
+    if (newArtifact) {
+      setCurrentArtifact(newArtifact)
+      
+      // Update assessment structure to reflect new active step
+      setAssessmentStructure(prev => {
+        const updated = JSON.parse(JSON.stringify(prev))
+        
+        // Set all steps to inactive
+        Object.values(updated).forEach((part: any) => {
+          part.steps.forEach((step: any) => {
+            step.active = false
+          })
+        })
+        
+        // Set the clicked step as active
+        Object.values(updated).forEach((part: any) => {
+          const step = part.steps.find((s: any) => s.id === stepId)
+          if (step) {
+            step.active = true
+          }
+        })
+        
+        return updated
+      })
+    }
+  }
+
+  const parseResearchData = () => {
+    if (!researchData?.analysisContent) return null
+    
+    try {
+      const parsed = JSON.parse(researchData.analysisContent)
+      // The structure is directly at the top level, not under GTM_Analysis
+      return parsed || null
+    } catch (error) {
+      console.error('Error parsing research data:', error)
+      return null
+    }
+  }
+
+  const renderArrayOrString = (data: any, colorClass: string = 'yellow') => {
+    if (!data) return null
+    
+    if (Array.isArray(data)) {
+      return data.map((item: string, index: number) => (
+        <li key={index} className="flex items-center gap-2">
+          <span className={`w-1.5 h-1.5 bg-${colorClass}-600 rounded-full`}></span>
+          {String(item)}
+        </li>
+      ))
+    } else if (typeof data === 'object' && data !== null) {
+      // Handle objects by converting them to key-value pairs or string representation
+      if (Object.keys(data).length === 0) return null
+      
+      return Object.entries(data).map(([key, value], index) => (
+        <li key={index} className="flex items-center gap-2">
+          <span className={`w-1.5 h-1.5 bg-${colorClass}-600 rounded-full`}></span>
+          <span><strong>{key}:</strong> {String(value)}</span>
+        </li>
+      ))
+    } else {
+      return (
+        <li className="flex items-center gap-2">
+          <span className={`w-1.5 h-1.5 bg-${colorClass}-600 rounded-full`}></span>
+          {String(data)}
+        </li>
+      )
+    }
+  }
+
+  const safeMap = (data: any, renderFunction: (item: any, index: number) => any) => {
+    if (!data) return null
+    if (!Array.isArray(data)) return null
+    return data.map(renderFunction)
+  }
+
+  const renderCurrentStepContent = () => {
+    const currentStep = getCurrentStepId()
+    const researchAnalysis = parseResearchData()
+    
+    // Default content if no research data
+    if (!researchAnalysis) {
+      return (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Interview Instructions</CardTitle>
+            <CardDescription>
+              You&apos;re about to begin a structured conversation with our AI interviewer about your company&apos;s go-to-market strategy.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <h4 className="font-medium mb-2">What to expect:</h4>
+                <ul className="space-y-1 text-superswift-gray-text">
+                  <li>• Natural voice conversation</li>
+                  <li>• Questions based on your research data</li>
+                  <li>• 30-45 minute structured discussion</li>
+                  <li>• Progress tracking throughout</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Tips for best results:</h4>
+                <ul className="space-y-1 text-superswift-gray-text">
+                  <li>• Speak clearly and naturally</li>
+                  <li>• Provide specific examples when possible</li>
+                  <li>• Take your time to think through answers</li>
+                  <li>• Ask for clarification if needed</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    // Render content based on current step
+    switch (currentStep) {
+      case 'identity':
+        return renderIdentityStepContent(researchAnalysis)
+      case 'market':
+        return renderMarketStepContent(researchAnalysis)
+      case 'competitive':
+        return renderCompetitiveStepContent(researchAnalysis)
+      case 'gtm':
+        return renderGTMStepContent(researchAnalysis)
+      case 'partnerships':
+        return renderPartnershipsStepContent(researchAnalysis)
+      case 'messaging':
+        return renderMessagingStepContent(researchAnalysis)
+      case 'operations':
+        return renderOperationsStepContent(researchAnalysis)
+      case 'measurement':
+        return renderMeasurementStepContent(researchAnalysis)
+      case 'risk':
+        return renderRiskStepContent(researchAnalysis)
+      default:
+        return renderIdentityStepContent(researchAnalysis)
+    }
+  }
+
+  const renderIdentityStepContent = (analysis: any) => {
+    const identityData = analysis?.PART_1_STRATEGIC_FOUNDATION?.Step1_Core_Identity
+    
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Core Identity & Business Model</CardTitle>
+            <CardDescription>Research findings about your company's mission, offering, and regulatory status</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {identityData?.Artifact1_Mission_Vision && (
+              <div>
+                <h4 className="font-medium mb-3">Mission & Vision</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h5 className="font-medium text-blue-900 mb-2">Mission</h5>
+                    <p className="text-sm text-blue-800">{identityData.Artifact1_Mission_Vision.mission}</p>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg">
+                    <h5 className="font-medium text-purple-900 mb-2">Vision</h5>
+                    <p className="text-sm text-purple-800">{identityData.Artifact1_Mission_Vision.vision}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {identityData?.Artifact2_Core_Offering && (
+              <div>
+                <h4 className="font-medium mb-3">Core Offering</h4>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h5 className="font-medium text-green-900 mb-2">{identityData.Artifact2_Core_Offering.product || identityData.Artifact2_Core_Offering.primary_product}</h5>
+                  <div className="text-sm text-green-800">
+                    <h6 className="font-medium mb-2">Key Features:</h6>
+                    <ul className="space-y-1">
+                      {renderArrayOrString(identityData.Artifact2_Core_Offering.key_features || identityData.Artifact2_Core_Offering.key_solutions, 'green')}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {identityData?.Artifact3_Regulatory_Pathway && (
+              <div>
+                <h4 className="font-medium mb-3">Regulatory Status</h4>
+                <div className="bg-yellow-50 p-4 rounded-lg">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <h6 className="font-medium text-yellow-900 mb-2">Classifications:</h6>
+                      <ul className="text-sm text-yellow-800 space-y-1">
+                        {renderArrayOrString(identityData.Artifact3_Regulatory_Pathway.classification || identityData.Artifact3_Regulatory_Pathway.classifications || identityData.Artifact3_Regulatory_Pathway.certifications, 'yellow')}
+                      </ul>
+                    </div>
+                    <div>
+                      <h6 className="font-medium text-yellow-900 mb-2">Primary Markets:</h6>
+                      <ul className="text-sm text-yellow-800 space-y-1">
+                        {renderArrayOrString(identityData.Artifact3_Regulatory_Pathway.primary_markets || identityData.Artifact3_Regulatory_Pathway.compliance || identityData.Artifact3_Regulatory_Pathway.key_requirements, 'yellow')}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {identityData?.Artifact4_Revenue_Model && (
+              <div>
+                <h4 className="font-medium mb-3">Revenue Model</h4>
+                <div className="bg-orange-50 p-4 rounded-lg">
+                  <div className="grid md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <h6 className="font-medium text-orange-900 mb-2">Primary Stream</h6>
+                      <p className="text-orange-800">{identityData.Artifact4_Revenue_Model.primary_model || identityData.Artifact4_Revenue_Model.primary_models?.[0]}</p>
+                    </div>
+                    <div>
+                      <h6 className="font-medium text-orange-900 mb-2">Pricing Structure</h6>
+                      <p className="text-orange-800">{identityData.Artifact4_Revenue_Model.pricing_structure || 'Per-site license with volume-based tiers'}</p>
+                    </div>
+                    <div>
+                      <h6 className="font-medium text-orange-900 mb-2">Additional Revenue</h6>
+                      <p className="text-orange-800">{identityData.Artifact4_Revenue_Model.additional_streams?.[0] || 'Implementation and training services'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  const renderMarketStepContent = (analysis: any) => {
+    const marketData = analysis?.PART_1_STRATEGIC_FOUNDATION?.Step2_Market_Intelligence
+    
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Customer & Market Intelligence</CardTitle>
+            <CardDescription>Market sizing, customer profiles, and value proposition insights</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {marketData?.Artifact5_Market_Sizing && (
+              <div>
+                <h4 className="font-medium mb-3">Market Sizing</h4>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                    <h5 className="font-medium text-blue-900 mb-1">TAM</h5>
+                    <p className="text-2xl font-bold text-blue-700">{marketData.Artifact5_Market_Sizing.TAM}</p>
+                    <p className="text-xs text-blue-600">Total Addressable Market</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg text-center">
+                    <h5 className="font-medium text-green-900 mb-1">SAM</h5>
+                    <p className="text-2xl font-bold text-green-700">{marketData.Artifact5_Market_Sizing.SAM}</p>
+                    <p className="text-xs text-green-600">Serviceable Addressable Market</p>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg text-center">
+                    <h5 className="font-medium text-purple-900 mb-1">SOM</h5>
+                    <p className="text-2xl font-bold text-purple-700">{marketData.Artifact5_Market_Sizing.SOM}</p>
+                    <p className="text-xs text-purple-600">Serviceable Obtainable Market</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {marketData?.Artifact6_Clinical_Evidence && (
+              <div>
+                <h4 className="font-medium mb-3">Clinical Evidence & KOL Strategy</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-indigo-50 p-4 rounded-lg">
+                    <h6 className="font-medium text-indigo-900 mb-2">Clinical Studies</h6>
+                    <ul className="text-sm text-indigo-800 space-y-1">
+                      {renderArrayOrString(marketData.Artifact6_Clinical_Evidence.Studies, 'indigo')}
+                    </ul>
+                  </div>
+                  <div className="bg-teal-50 p-4 rounded-lg">
+                    <h6 className="font-medium text-teal-900 mb-2">KOL Strategy</h6>
+                    <p className="text-sm text-teal-800 mb-2">{marketData.Artifact6_Clinical_Evidence.KOL_Strategy?.Primary_KOLs}</p>
+                    <h7 className="font-medium text-teal-900 text-xs">Focus Areas:</h7>
+                    <ul className="text-sm text-teal-800 space-y-1 mt-1">
+                      {renderArrayOrString(marketData.Artifact6_Clinical_Evidence.KOL_Strategy?.Focus_Areas, 'teal')}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {marketData?.Artifact7_ICP && (
+              <div>
+                <h4 className="font-medium mb-3">Ideal Customer Profile</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-yellow-50 p-4 rounded-lg">
+                    <h6 className="font-medium text-yellow-900 mb-2">Primary Customers</h6>
+                    <ul className="text-sm text-yellow-800 space-y-1">
+                      {renderArrayOrString(marketData.Artifact7_ICP.Primary_Customers, 'yellow')}
+                    </ul>
+                  </div>
+                  <div className="bg-red-50 p-4 rounded-lg">
+                    <h6 className="font-medium text-red-900 mb-2">Key Decision Makers</h6>
+                    <ul className="text-sm text-red-800 space-y-1">
+                      {renderArrayOrString(marketData.Artifact7_ICP.Key_Decision_Makers, 'red')}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {marketData?.Artifact8_Value_Proposition && (
+              <div>
+                <h4 className="font-medium mb-3">Value Proposition</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-red-50 p-4 rounded-lg">
+                    <h6 className="font-medium text-red-900 mb-2">Pains Addressed</h6>
+                    <ul className="text-sm text-red-800 space-y-1">
+                      {renderArrayOrString(marketData.Artifact8_Value_Proposition.Pains_Addressed, 'red')}
+                    </ul>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h6 className="font-medium text-green-900 mb-2">Gains Delivered</h6>
+                    <ul className="text-sm text-green-800 space-y-1">
+                      {renderArrayOrString(marketData.Artifact8_Value_Proposition.Gains_Delivered, 'green')}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  const renderCompetitiveStepContent = (analysis: any) => {
+    const competitiveData = analysis?.PART_2_STRATEGY_POSITIONING?.Step3_Competitive_Landscape
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Competitive Landscape</CardTitle>
+          <CardDescription>Direct and indirect competitors, and key differentiators</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {competitiveData?.Artifact9_Competitors && (
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-red-50 p-4 rounded-lg">
+                <h5 className="font-medium text-red-900 mb-2">Direct Competitors</h5>
+                <ul className="text-sm text-red-800 space-y-1">
+                  {renderArrayOrString(competitiveData.Artifact9_Competitors.Direct, 'red')}
+                </ul>
+              </div>
+              <div className="bg-orange-50 p-4 rounded-lg">
+                <h5 className="font-medium text-orange-900 mb-2">Indirect Competitors</h5>
+                <ul className="text-sm text-orange-800 space-y-1">
+                  {renderArrayOrString(competitiveData.Artifact9_Competitors.Indirect, 'orange')}
+                </ul>
+              </div>
+            </div>
+          )}
+          
+          {competitiveData?.Artifact10_Differentiation && (
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h5 className="font-medium text-green-900 mb-2">Key Differentiators</h5>
+              <ul className="text-sm text-green-800 space-y-1">
+                {renderArrayOrString(competitiveData.Artifact10_Differentiation.Key_Differentiators, 'green')}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const renderGTMStepContent = (analysis: any) => {
+    const gtmData = analysis?.PART_2_STRATEGY_POSITIONING?.Step4_Channel_Approach
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Channel & Go-to-Market</CardTitle>
+          <CardDescription>Sales channels, process, and team structure</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {gtmData?.Artifact11_Channel_Strategy && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h5 className="font-medium text-blue-900 mb-2">Channel Strategy</h5>
+              <p className="text-sm text-blue-800 mb-2">Mix: {gtmData.Artifact11_Channel_Strategy.Mix}</p>
+              <ul className="text-sm text-blue-800 space-y-1">
+                {renderArrayOrString(gtmData.Artifact11_Channel_Strategy.Primary_Channels, 'blue')}
+              </ul>
+            </div>
+          )}
+          
+          {gtmData?.Artifact12_Sales_Process && (
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <h5 className="font-medium text-purple-900 mb-2">Sales Process Stages</h5>
+              <ul className="text-sm text-purple-800 space-y-1">
+                {renderArrayOrString(gtmData.Artifact12_Sales_Process.Stages, 'purple')}
+              </ul>
+            </div>
+          )}
+          
+          {gtmData?.Artifact13_GTM_Team && (
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h5 className="font-medium text-green-900 mb-2">GTM Team Structure</h5>
+              <ul className="text-sm text-green-800 space-y-1">
+                {renderArrayOrString(gtmData.Artifact13_GTM_Team.Core_Roles, 'green')}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const renderPartnershipsStepContent = (analysis: any) => {
+    const partnershipData = analysis?.PART_2_STRATEGY_POSITIONING?.Step5_Partnership_Strategy
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Partnership & Alliance Strategy</CardTitle>
+          <CardDescription>Strategic partnerships and partner enablement models</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {partnershipData?.Artifact14_Partnership_Framework && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h5 className="font-medium text-blue-900 mb-2">Partnership Types</h5>
+              <ul className="text-sm text-blue-800 space-y-1">
+                {renderArrayOrString(partnershipData.Artifact14_Partnership_Framework.Types, 'blue')}
+              </ul>
+            </div>
+          )}
+          
+          {partnershipData?.Artifact15_Partner_Model && (
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h5 className="font-medium text-green-900 mb-2">Partner Incentives</h5>
+              <ul className="text-sm text-green-800 space-y-1">
+                {renderArrayOrString(partnershipData.Artifact15_Partner_Model.Incentives, 'green')}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const renderMessagingStepContent = (analysis: any) => {
+    const messagingData = analysis?.PART_2_STRATEGY_POSITIONING?.Step6_Brand_Messaging
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Brand & Messaging</CardTitle>
+          <CardDescription>Brand positioning and core messaging pillars</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {messagingData?.Artifact16_Brand_Position && (
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <h5 className="font-medium text-purple-900 mb-2">Brand Positioning Statement</h5>
+              <p className="text-sm text-purple-800">{messagingData.Artifact16_Brand_Position}</p>
+            </div>
+          )}
+          
+          {messagingData?.Artifact17_Message_Pillars && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h5 className="font-medium text-blue-900 mb-2">Core Messaging Pillars</h5>
+              <div className="grid md:grid-cols-2 gap-3">
+                {Array.isArray(messagingData.Artifact17_Message_Pillars) ? messagingData.Artifact17_Message_Pillars.map((pillar: string, index: number) => (
+                  <div key={index} className="bg-white p-3 rounded border border-blue-200">
+                    <p className="text-sm font-medium text-blue-800">{String(pillar)}</p>
+                  </div>
+                )) : null}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const renderOperationsStepContent = (analysis: any) => {
+    const operationsData = analysis?.PART_3_EXECUTION_OPERATIONS?.Step7_Operations
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">GTM Operations & Execution</CardTitle>
+          <CardDescription>Quality management, implementation timeline, and tech stack</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {operationsData?.Artifact18_QMS && (
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <h5 className="font-medium text-yellow-900 mb-2">Quality Management System</h5>
+              <p className="text-sm text-yellow-800 mb-2">Framework: {operationsData.Artifact18_QMS.Framework}</p>
+              <h6 className="font-medium text-yellow-900 mb-1">Key Processes:</h6>
+              <ul className="text-sm text-yellow-800 space-y-1">
+                {renderArrayOrString(operationsData.Artifact18_QMS.Key_Processes, 'yellow')}
+              </ul>
+            </div>
+          )}
+          
+          {operationsData?.Artifact19_Implementation_Timeline && (
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h5 className="font-medium text-green-900 mb-2">Implementation Timeline</h5>
+              <ul className="text-sm text-green-800 space-y-1">
+                {renderArrayOrString(operationsData.Artifact19_Implementation_Timeline.Phases, 'green')}
+              </ul>
+            </div>
+          )}
+          
+          {operationsData?.Artifact20_Tech_Stack && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h5 className="font-medium text-blue-900 mb-2">Technology Stack</h5>
+              <ul className="text-sm text-blue-800 space-y-1">
+                {renderArrayOrString(operationsData.Artifact20_Tech_Stack.Core_Components, 'blue')}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const renderMeasurementStepContent = (analysis: any) => {
+    const measurementData = analysis?.PART_3_EXECUTION_OPERATIONS?.Step8_Performance_Measurement
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Performance Measurement & KPIs</CardTitle>
+          <CardDescription>Key performance indicators and strategic goals</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {measurementData?.Artifact21_KPIs && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h5 className="font-medium text-blue-900 mb-2">Core GTM KPIs</h5>
+              <ul className="text-sm text-blue-800 space-y-1">
+                {renderArrayOrString(measurementData.Artifact21_KPIs, 'blue')}
+              </ul>
+            </div>
+          )}
+          
+          {measurementData?.Artifact22_Strategic_Goals && (
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h5 className="font-medium text-green-900 mb-2">Strategic Goals</h5>
+              <ul className="text-sm text-green-800 space-y-1">
+                {renderArrayOrString(measurementData.Artifact22_Strategic_Goals, 'green')}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const renderRiskStepContent = (analysis: any) => {
+    const riskData = analysis?.PART_3_EXECUTION_OPERATIONS?.Step9_Risk_Assessment
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Risk & Mitigation</CardTitle>
+          <CardDescription>Comprehensive risk assessment and mitigation strategies</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {riskData?.Artifact23_Risk_Matrix && (
+            <div className="space-y-4">
+              {Object.entries(riskData.Artifact23_Risk_Matrix).map(([riskType, riskInfo]: [string, any], index: number) => (
+                <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h5 className="font-medium text-gray-900">{riskType.replace('_', ' ')}</h5>
+                    {typeof riskInfo === 'object' && riskInfo.Level ? (
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        riskInfo.Level === 'High' ? 'bg-red-100 text-red-800' :
+                        riskInfo.Level === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        {riskInfo.Level} Risk
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                        Risk Category
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-700">
+                    {typeof riskInfo === 'object' && riskInfo.Mitigation ? (
+                      <p>{riskInfo.Mitigation}</p>
+                    ) : Array.isArray(riskInfo) ? (
+                      <ul className="space-y-1">
+                        {riskInfo.map((item: string, idx: number) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
+                            {String(item)}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>{String(riskInfo)}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
   const handlePauseInterview = async () => {
     try {
       setSessionStatus('saving')
@@ -919,6 +1651,7 @@ export default function InterviewConduct({ sessionId }: InterviewConductProps) {
                       className={`p-3 border-b border-superswift-gray-border cursor-pointer hover:bg-white transition-colors ${
                         step.active ? 'bg-white border-l-4 border-l-superswift-orange' : ''
                       }`}
+                      onClick={() => handleStepClick(step.id)}
                     >
                       <div className="flex items-center gap-3">
                         {/* Traffic Light Status */}
@@ -1000,37 +1733,8 @@ export default function InterviewConduct({ sessionId }: InterviewConductProps) {
                 </div>
               </div>
 
-              {/* Interview Instructions */}
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="text-lg">Interview Instructions</CardTitle>
-                  <CardDescription>
-                    You&apos;re about to begin a structured conversation with our AI interviewer about your company&apos;s go-to-market strategy.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <h4 className="font-medium mb-2">What to expect:</h4>
-                      <ul className="space-y-1 text-superswift-gray-text">
-                        <li>• Natural voice conversation</li>
-                        <li>• Questions based on your research data</li>
-                        <li>• 30-45 minute structured discussion</li>
-                        <li>• Progress tracking throughout</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-medium mb-2">Tips for best results:</h4>
-                      <ul className="space-y-1 text-superswift-gray-text">
-                        <li>• Speak clearly and naturally</li>
-                        <li>• Provide specific examples when possible</li>
-                        <li>• Take your time to think through answers</li>
-                        <li>• Ask for clarification if needed</li>
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Current Step Content */}
+              {renderCurrentStepContent()}
             </div>
           </div>
         </div>
@@ -1058,77 +1762,107 @@ export default function InterviewConduct({ sessionId }: InterviewConductProps) {
                 </Button>
               </Link>
             </div>
-            
-            {/* Session Controls */}
-            <div className="flex items-center gap-2">
-              {!isPaused ? (
-                <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handlePauseInterview}
-                    disabled={sessionStatus === 'saving'}
-                    className="flex items-center gap-1"
-                  >
-                    <Pause className="h-3 w-3" />
-                    Pause
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleSaveProgress}
-                    disabled={sessionStatus === 'saving'}
-                    className="flex items-center gap-1"
-                  >
-                    <Save className="h-3 w-3" />
-                    {sessionStatus === 'saving' ? 'Saving...' : 'Save'}
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  size="sm"
-                  onClick={handleResumeInterview}
-                  disabled={sessionStatus === 'saving'}
-                  className="flex items-center gap-1 bg-superswift-orange hover:bg-superswift-orange-light text-white"
-                >
-                  <Play className="h-3 w-3" />
-                  Resume
-                </Button>
-              )}
-            </div>
-            
-            {isPaused && (
-              <div className="mt-2 text-xs text-superswift-gray-text bg-yellow-50 p-2 rounded">
-                Interview is paused. Click Resume to continue your conversation.
-              </div>
-            )}
           </div>
 
           {/* Voice Interface Container */}
           <div className="flex-1 relative">
-            {!isPaused ? (
-              <elevenlabs-convai 
-                agent-id="agent_3701k5bdgncmevhspegh2ja47ftc"
-                onMessage={(event: any) => handleVoiceMessage(event)}
-                onStateChange={(event: any) => handleStateChange(event)}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full bg-gray-50">
-                <div className="text-center p-6">
-                  <Pause className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-600 mb-2">Interview Paused</h3>
-                  <p className="text-gray-500 text-sm mb-4">
-                    Your conversation has been paused and your progress has been saved.
+            {(!browserSupported || connectionTimeout) ? (
+              /* Browser Compatibility Warning */
+              <div className="flex items-center justify-center h-full bg-yellow-50">
+                <div className="text-center p-6 max-w-md">
+                  <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <Target className="h-6 w-6 text-yellow-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-yellow-900 mb-2">
+                    {connectionTimeout ? 'Connection Timeout' : 'Browser Compatibility Issue'}
+                  </h3>
+                  <p className="text-yellow-800 text-sm mb-4">
+                    {connectionError}
                   </p>
-                  <Button
-                    onClick={handleResumeInterview}
-                    disabled={sessionStatus === 'saving'}
-                    className="bg-superswift-orange hover:bg-superswift-orange-light text-white"
-                  >
-                    <Play className="h-4 w-4 mr-2" />
-                    Resume Interview
-                  </Button>
+                  <div className="space-y-2 text-xs text-yellow-700 mb-4">
+                    <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                      <p className="font-semibold text-blue-900 mb-1">✅ RECOMMENDED SOLUTION:</p>
+                      <p className="text-blue-800">Please check your microphone permissions</p>
+                    </div>
+                    
+                    <div className="mt-3">
+                      <p><strong>Or for Chrome users, try:</strong></p>
+                      <ul className="text-left space-y-1 mt-1">
+                        <li>• Enable microphone permissions for this site</li>
+                        <li>• Clear browser cache and cookies</li>
+                        <li>• Close other ElevenLabs tabs</li>
+                        <li>• Refresh the page</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => window.open('https://arc.net', '_blank')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                    >
+                      Download Arc Browser
+                    </Button>
+                    <Button
+                      onClick={() => window.location.reload()}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Retry in Chrome
+                    </Button>
+                  </div>
                 </div>
+              </div>
+            ) : (
+              /* ElevenLabs ConvAI Widget - Context-Aware Integration */
+              <div className="h-full">
+                {widgetLoaded && (
+                  <elevenlabs-convai 
+                    agent-id="agent_3701k5bdgncmevhspegh2ja47ftc"
+                    dynamic-variables={JSON.stringify({
+                      company_name: researchData?.companyUrl || 'the company',
+                      current_step: getCurrentStepName(),
+                      current_artifact: getCurrentArtifactName(),
+                      step_description: getCurrentStepDescription(),
+                      mission: parseResearchData()?.PART_1_STRATEGIC_FOUNDATION?.Step1_Core_Identity?.Artifact1_Mission_Vision?.mission || '',
+                      vision: parseResearchData()?.PART_1_STRATEGIC_FOUNDATION?.Step1_Core_Identity?.Artifact1_Mission_Vision?.vision || '',
+                      product: parseResearchData()?.PART_1_STRATEGIC_FOUNDATION?.Step1_Core_Identity?.Artifact2_Core_Offering?.product || '',
+                      user_name: userInfo?.name || 'the participant',
+                      user_role: userInfo?.role || 'team member'
+                    })}
+                    override-prompt={`You are a Senior Strategy Consultant at SuperSwift, a leading medtech go-to-market consulting firm conducting a structured strategic assessment interview.
+
+CRITICAL INSTRUCTIONS:
+- You are conducting a STRUCTURED STRATEGIC ASSESSMENT INTERVIEW for {{company_name}}
+- NEVER give generic greetings like "How can I help you?"
+- IMMEDIATELY start with structured interview questions about the current artifact
+- Current focus: {{current_step}} - {{current_artifact}}
+- Participant: {{user_name}}, {{user_role}}
+
+COMPANY CONTEXT:
+- Mission: {{mission}}
+- Vision: {{vision}}
+- Product: {{product}}
+
+INTERVIEW APPROACH:
+1. Reference the specific research findings shown on screen
+2. Ask targeted questions about {{current_artifact}}
+3. Encourage detailed responses with specific examples
+4. Maintain professional SuperSwift consulting tone
+5. Guide conversation toward strategic insights
+
+FIRST QUESTION FOCUS: Ask specifically about the {{current_artifact}} artifact based on {{step_description}}`}
+                    override-first-message={`Hi, I'm from SuperSwift. I've reviewed the comprehensive research on ${researchData?.companyUrl || 'your company'}. Let's begin our strategic assessment focusing on ${getCurrentArtifactName()}. ${getFirstArtifactQuestion()}`}
+                  />
+                )}
+                {!widgetLoaded && (
+                  <div className="flex items-center justify-center h-full bg-gray-50">
+                    <div className="text-center p-6">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-superswift-orange mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading voice interface...</p>
+                      <p className="text-xs text-gray-500 mt-2">If this takes too long, please refresh the page</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1136,11 +1870,61 @@ export default function InterviewConduct({ sessionId }: InterviewConductProps) {
       </div>
 
       {/* ElevenLabs ConvAI Script */}
-      <Script 
-        src="https://unpkg.com/@elevenlabs/convai-widget-embed" 
-        strategy="afterInteractive"
-        onLoad={() => setWidgetLoaded(true)}
-      />
+      {browserSupported && (
+        <Script 
+          src="https://unpkg.com/@elevenlabs/convai-widget-embed" 
+          strategy="afterInteractive"
+          onLoad={() => {
+            console.log('ElevenLabs widget script loaded')
+            setWidgetLoaded(true)
+            
+            // Check if we're in Chrome and handle accordingly
+            const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
+            
+            // Auto-start conversation and hide call button
+            setTimeout(() => {
+              const widget = document.querySelector('elevenlabs-convai')
+              if (widget && widget.shadowRoot) {
+                // Hide the start call button in shadow DOM
+                const style = document.createElement('style')
+                style.textContent = `
+                  button[aria-label*="Start"],
+                  button[aria-label*="call"],
+                  [data-testid*="phone" i],
+                  .start-call-button,
+                  .phone-button {
+                    display: none !important;
+                  }
+                `
+                widget.shadowRoot.appendChild(style)
+                
+                // Auto-click start if button exists (with Chrome delay)
+                const startButton = widget.shadowRoot.querySelector('button[aria-label*="Start"], button[aria-label*="call"]')
+                if (startButton) {
+                  // Longer delay for Chrome
+                  setTimeout(() => {
+                    startButton.click()
+                  }, isChrome ? 2000 : 500)
+                }
+                
+                // Listen for connection errors
+                widget.addEventListener('error', (event) => {
+                  console.error('ElevenLabs widget error:', event)
+                  if (isChrome) {
+                    setConnectionError('Connection failed. Please check microphone permissions.')
+                    setBrowserSupported(false)
+                  }
+                })
+              }
+            }, isChrome ? 2000 : 1000)
+          }}
+          onError={(error) => {
+            console.error('Failed to load ElevenLabs script:', error)
+            setConnectionError('Failed to load voice interface. Please refresh the page.')
+            setBrowserSupported(false)
+          }}
+        />
+      )}
 
       {/* Custom Styles for Integrated Widget */}
       <style jsx global>{`
@@ -1160,6 +1944,16 @@ export default function InterviewConduct({ sessionId }: InterviewConductProps) {
 
         /* Hide widget header in sidebar mode */
         elevenlabs-convai .chat-header {
+          display: none !important;
+        }
+
+        /* Hide the Start Call button - conversation should always be active */
+        elevenlabs-convai button[aria-label*="Start"],
+        elevenlabs-convai button[aria-label*="call"],
+        elevenlabs-convai [data-testid*="phone" i],
+        elevenlabs-convai [class*="phone-button" i],
+        elevenlabs-convai [class*="start-call" i],
+        elevenlabs-convai [class*="call-button" i] {
           display: none !important;
         }
 

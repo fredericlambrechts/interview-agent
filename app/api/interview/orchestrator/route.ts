@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
+// Artifact structure interfaces
+interface ArtifactInfo {
+  id: string
+  name: string
+  key: string
+}
+
+interface StepInfo {
+  id: string
+  name: string
+  artifacts: ArtifactInfo[]
+}
+
+interface PartInfo {
+  name: string
+  steps: StepInfo[]
+}
+
 // Schema for orchestrator requests
 const orchestratorSchema = z.object({
   sessionId: z.string(),
@@ -117,19 +135,49 @@ interface ArtifactInfo {
   [key: string]: unknown;
 }
 
-interface DynamicQuestion {
-  id: string;
-  type: string;
-  artifactId: string;
-  question: string;
-  followUps: string[];
-}
+// Note: DynamicQuestion interface reserved for future use
+// interface DynamicQuestion {
+//   id: string;
+//   type: string;
+//   artifactId: string;
+//   question: string;
+//   followUps: string[];
+// }
 
-// Get research data from in-memory storage
-function getResearchData(sessionId: string): ResearchStatus | null {
-  // Access global research status map
-  const researchStatus = global.researchStatusMap?.get(sessionId)
-  return researchStatus || null
+// Get research data from database
+async function getResearchData(sessionId: string): Promise<ResearchStatus | null> {
+  try {
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
+    const { data, error } = await supabase
+      .from('assessment_sessions')
+      .select('research_data, company_url')
+      .eq('session_id', sessionId)
+      .single()
+
+    if (error || !data) {
+      console.error('Failed to fetch research data:', error)
+      return null
+    }
+
+    console.log('Research data fetched:', { 
+      hasResearchData: !!data.research_data,
+      hasAnalysisContent: !!data.research_data?.analysis_content,
+      companyUrl: data.company_url 
+    })
+
+    return {
+      analysisContent: data.research_data?.analysis_content || '',
+      companyUrl: data.company_url || ''
+    }
+  } catch (error) {
+    console.error('Error fetching research data:', error)
+    return null
+  }
 }
 
 // Parse research analysis to extract artifact data
@@ -292,15 +340,15 @@ interface ArtifactDetail {
 }
 
 function findArtifactInfo(artifactId: string): ArtifactDetail | null {
-  for (const part of Object.values(ARTIFACT_STRUCTURE)) {
-    for (const step of (part as any).steps) {
+  for (const part of Object.values(ARTIFACT_STRUCTURE) as PartInfo[]) {
+    for (const step of part.steps) {
       for (const artifact of step.artifacts) {
         if (artifact.id === artifactId) {
           return {
             ...artifact,
             stepId: step.id,
             stepName: step.name,
-            partName: (part as any).name
+            partName: part.name
           }
         }
       }
@@ -364,10 +412,10 @@ function calculateProgress(sessionId: string): Progress {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { sessionId, currentStep, currentArtifact, conversationContext } = orchestratorSchema.parse(body)
+    const { sessionId, currentStep, currentArtifact } = orchestratorSchema.parse(body)
     
     // Get research data for this session
-    const researchData = getResearchData(sessionId)
+    const researchData = await getResearchData(sessionId)
     if (!researchData) {
       return NextResponse.json(
         { success: false, error: 'Research data not found for session' },
@@ -420,11 +468,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function determineNextArtifact(completedArtifacts: string[], currentArtifact?: string): string {
+function determineNextArtifact(completedArtifacts: string[]): string {
   // Get all artifacts in order
   const allArtifacts: string[] = []
-  for (const part of Object.values(ARTIFACT_STRUCTURE)) {
-    for (const step of (part as any).steps) {
+  for (const part of Object.values(ARTIFACT_STRUCTURE) as PartInfo[]) {
+    for (const step of part.steps) {
       for (const artifact of step.artifacts) {
         allArtifacts.push(artifact.id)
       }
@@ -457,7 +505,7 @@ export async function GET(request: NextRequest) {
   const progress = calculateProgress(sessionId)
   
   // Get research data
-  const researchData = getResearchData(sessionId)
+  const researchData = await getResearchData(sessionId)
   
   return NextResponse.json({
     success: true,

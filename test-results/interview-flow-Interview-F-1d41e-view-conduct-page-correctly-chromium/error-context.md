@@ -1,0 +1,136 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e8]
+          - generic [ref=e12]:
+            - heading "Strategic Assessment" [level=2] [ref=e13]
+            - generic [ref=e14]: Go-to-Market Strategy Analysis
+        - generic [ref=e15]:
+          - generic [ref=e16]:
+            - generic [ref=e17]: Overall Progress
+            - generic [ref=e18]: 17%
+          - generic [ref=e21]: 1 completed, 1 in progress, 7 remaining
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - generic [ref=e25]:
+            - img [ref=e26]
+            - generic [ref=e28]: Strategic Foundation
+            - generic [ref=e29]: 1/2
+          - generic [ref=e30]:
+            - generic [ref=e34] [cursor=pointer]:
+              - generic [ref=e35] [cursor=pointer]: 1. Core Identity & Business Model
+              - generic [ref=e36] [cursor=pointer]: Completed
+            - generic [ref=e40] [cursor=pointer]:
+              - generic [ref=e41] [cursor=pointer]: 2. Customer & Market Intelligence
+              - generic [ref=e42] [cursor=pointer]: In Progress
+        - generic [ref=e44]:
+          - generic [ref=e46]:
+            - img [ref=e47]
+            - generic [ref=e49]: Strategy & Positioning
+            - generic [ref=e50]: 0/4
+          - generic [ref=e51]:
+            - generic [ref=e55] [cursor=pointer]:
+              - generic [ref=e56] [cursor=pointer]: 1. Competitive Landscape
+              - generic [ref=e57] [cursor=pointer]: Not Started
+            - generic [ref=e61] [cursor=pointer]:
+              - generic [ref=e62] [cursor=pointer]: 2. Channel & Go-to-Market
+              - generic [ref=e63] [cursor=pointer]: Not Started
+            - generic [ref=e67] [cursor=pointer]:
+              - generic [ref=e68] [cursor=pointer]: 3. Partnership & Alliance Strategy
+              - generic [ref=e69] [cursor=pointer]: Not Started
+            - generic [ref=e73] [cursor=pointer]:
+              - generic [ref=e74] [cursor=pointer]: 4. Brand & Messaging
+              - generic [ref=e75] [cursor=pointer]: Not Started
+        - generic [ref=e76]:
+          - generic [ref=e78]:
+            - img [ref=e79]
+            - generic [ref=e81]: Execution & Operations
+            - generic [ref=e82]: 0/3
+          - generic [ref=e83]:
+            - generic [ref=e87] [cursor=pointer]:
+              - generic [ref=e88] [cursor=pointer]: 1. GTM Operations & Execution
+              - generic [ref=e89] [cursor=pointer]: Not Started
+            - generic [ref=e93] [cursor=pointer]:
+              - generic [ref=e94] [cursor=pointer]: 2. Performance Measurement & KPIs
+              - generic [ref=e95] [cursor=pointer]: Not Started
+            - generic [ref=e99] [cursor=pointer]:
+              - generic [ref=e100] [cursor=pointer]: 3. Risk & Mitigation
+              - generic [ref=e101] [cursor=pointer]: Not Started
+      - generic [ref=e104]: Initializing interview...
+    - generic [ref=e107]:
+      - generic [ref=e109]:
+        - link "Back to Overview" [ref=e110] [cursor=pointer]:
+          - /url: /interview/test-session-1758568373968
+          - button "Back to Overview" [ref=e111]:
+            - img
+            - text: Back to Overview
+        - generic [ref=e112]:
+          - img [ref=e114]
+          - generic [ref=e118]:
+            - heading "Strategic Assessment Interview" [level=2] [ref=e119]
+            - paragraph [ref=e120]: Voice conversation with AI interviewer
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - generic [ref=e123]: Interview Instructions
+          - generic [ref=e124]: You're about to begin a structured conversation with our AI interviewer about your company's go-to-market strategy.
+        - generic [ref=e126]:
+          - generic [ref=e127]:
+            - heading "What to expect:" [level=4] [ref=e128]
+            - list [ref=e129]:
+              - listitem [ref=e130]: • Natural voice conversation
+              - listitem [ref=e131]: • Questions based on your research data
+              - listitem [ref=e132]: • 30-45 minute structured discussion
+              - listitem [ref=e133]: • Progress tracking throughout
+          - generic [ref=e134]:
+            - heading "Tips for best results:" [level=4] [ref=e135]
+            - list [ref=e136]:
+              - listitem [ref=e137]: • Speak clearly and naturally
+              - listitem [ref=e138]: • Provide specific examples when possible
+              - listitem [ref=e139]: • Take your time to think through answers
+              - listitem [ref=e140]: • Ask for clarification if needed
+    - generic [ref=e141]:
+      - generic [ref=e142]:
+        - generic [ref=e143]:
+          - generic [ref=e146]: Voice Interview
+          - link "End Interview" [ref=e147] [cursor=pointer]:
+            - /url: /interview/test-session-1758568373968
+            - button "End Interview" [ref=e148]
+        - generic [ref=e149]:
+          - button "Pause" [ref=e150]:
+            - img
+            - text: Pause
+          - button "Save" [ref=e151]:
+            - img
+            - text: Save
+      - generic [ref=e152]:
+        - generic:
+          - generic [ref=e153]:
+            - textbox "Text message input" [ref=e159]
+            - button "Start a call" [ref=e168] [cursor=pointer]:
+              - img [ref=e170] [cursor=pointer]
+          - generic:
+            - paragraph:
+              - generic: Powered by ElevenLabs
+              - link "Conversational AI" [ref=e172] [cursor=pointer]:
+                - /url: https://elevenlabs.io/conversational-ai
+  - region "Notifications alt+T"
+  - alert [ref=e173]
+  - generic [ref=e178] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e179] [cursor=pointer]:
+      - img [ref=e180] [cursor=pointer]
+    - generic [ref=e183] [cursor=pointer]:
+      - button "Open issues overlay" [ref=e184] [cursor=pointer]:
+        - generic [ref=e185] [cursor=pointer]:
+          - generic [ref=e186] [cursor=pointer]: "1"
+          - generic [ref=e187] [cursor=pointer]: "2"
+        - generic [ref=e188] [cursor=pointer]:
+          - text: Issue
+          - generic [ref=e189] [cursor=pointer]: s
+      - button "Collapse issues badge" [ref=e190] [cursor=pointer]:
+        - img [ref=e191] [cursor=pointer]
+```

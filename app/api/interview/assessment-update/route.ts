@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
+// Conversation message interfaces
+interface ConversationMessage {
+  type: 'user' | 'agent' | 'system'
+  content: string
+  timestamp: string
+  metadata?: Record<string, unknown>
+}
+
+interface ConversationSummary {
+  totalMessages: number
+  userMessages: number
+  agentMessages: number
+  systemMessages: number
+  duration: string
+  firstMessage?: string
+  lastMessage?: string
+}
+
 // In-memory storage for assessment sessions (replace with database later)
 interface AssessmentSession {
   sessionId: string;
@@ -10,7 +28,7 @@ interface AssessmentSession {
   completedAt?: string;
   artifacts: Record<string, ArtifactData>;
   stepData?: Record<string, unknown>;
-  conversationSummary?: unknown[];
+  conversationSummary?: ConversationSummary;
   finalStats?: FinalStats;
 }
 
@@ -42,8 +60,8 @@ interface UpdateData {
 }
 
 declare global {
-  var assessmentSessions: Map<string, AssessmentSession>
-  var conversationData: Map<string, unknown[]>
+  let assessmentSessions: Map<string, AssessmentSession>
+  let conversationData: Map<string, unknown[]>
 }
 
 if (!global.assessmentSessions) {
@@ -229,9 +247,9 @@ async function handleInterviewCompletion(sessionId: string) {
     const conversationHistory = global.conversationData.get(sessionId) || []
     assessmentSession.conversationSummary = {
       totalMessages: conversationHistory.length,
-      userMessages: conversationHistory.filter((msg: any) => msg.type === 'user').length,
-      agentMessages: conversationHistory.filter((msg: any) => msg.type === 'agent').length,
-      systemMessages: conversationHistory.filter((msg: any) => msg.type === 'system').length,
+      userMessages: conversationHistory.filter((msg: ConversationMessage) => msg.type === 'user').length,
+      agentMessages: conversationHistory.filter((msg: ConversationMessage) => msg.type === 'agent').length,
+      systemMessages: conversationHistory.filter((msg: ConversationMessage) => msg.type === 'system').length,
       duration: calculateInterviewDuration(conversationHistory),
       firstMessage: conversationHistory[0]?.timestamp,
       lastMessage: conversationHistory[conversationHistory.length - 1]?.timestamp
@@ -265,15 +283,15 @@ async function handleInterviewCompletion(sessionId: string) {
   }
 }
 
-function calculateArtifactStats(artifacts: any) {
+function calculateArtifactStats(artifacts: Record<string, ArtifactData>) {
   const artifactValues = Object.values(artifacts)
-  const completed = artifactValues.filter((artifact: any) => artifact.status === 'completed').length
-  const inProgress = artifactValues.filter((artifact: any) => artifact.status === 'in_progress').length
+  const completed = artifactValues.filter((artifact: ArtifactData) => artifact.status === 'completed').length
+  const inProgress = artifactValues.filter((artifact: ArtifactData) => artifact.status === 'in_progress').length
   const total = 23 // Total artifacts in the framework
 
   const confidenceScores = artifactValues
-    .filter((artifact: any) => artifact.confidence !== undefined)
-    .map((artifact: any) => artifact.confidence)
+    .filter((artifact: ArtifactData) => artifact.confidence !== undefined)
+    .map((artifact: ArtifactData) => artifact.confidence as number)
   
   const averageConfidence = confidenceScores.length > 0 
     ? confidenceScores.reduce((sum, conf) => sum + conf, 0) / confidenceScores.length 
@@ -289,7 +307,7 @@ function calculateArtifactStats(artifacts: any) {
   }
 }
 
-function calculateInterviewDuration(conversationHistory: any[]): string {
+function calculateInterviewDuration(conversationHistory: ConversationMessage[]): string {
   if (conversationHistory.length < 2) return '0m'
   
   const firstTimestamp = new Date(conversationHistory[0].timestamp).getTime()

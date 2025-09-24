@@ -27,7 +27,7 @@ interface SessionState {
 
 // In-memory storage for interview sessions (replace with database later)
 declare global {
-  var interviewSessions: Map<string, SessionData>
+  let interviewSessions: Map<string, SessionData>
 }
 
 if (!global.interviewSessions) {
